@@ -1,0 +1,210 @@
+{
+ "modes": {
+  "easy": {
+   "eq": 1.069044,
+   "start": 1.0,
+   "closed_pnl": 0.069044,
+   "positions": 0,
+   "pos": [],
+   "trades": 27,
+   "wins": 12,
+   "window": true,
+   "paused": false,
+   "stopped": false,
+   "ts": 1794942222570
+  },
+  "medium": {
+   "eq": 0.94582,
+   "start": 1.0,
+   "closed_pnl": -0.05418,
+   "positions": 0,
+   "pos": [],
+   "trades": 11,
+   "wins": 2,
+   "window": true,
+   "paused": false,
+   "stopped": false,
+   "ts": 1794942222570
+  },
+  "hard": {
+   "eq": 0.118993,
+   "start": 1.0,
+   "closed_pnl": -0.881007,
+   "positions": 0,
+   "pos": [],
+   "trades": 146,
+   "wins": 46,
+   "window": true,
+   "paused": false,
+   "stopped": true,
+   "ts": 1794942222572
+  },
+  "exclusive": {
+   "eq": 0.680933,
+   "start": 1.0,
+   "closed_pnl": -0.32126,
+   "positions": 1,
+   "pos": [
+    {
+     "symbol": "SA",
+     "entry": 0.000805036155,
+     "px": 0.0008226,
+     "peak": 0.0008227,
+     "sl": 0.0007245325395,
+     "tp": 0.008855397705,
+     "cost": 0.1005,
+     "value": 0.102693,
+     "pnl": 2.18,
+     "opened": 1793807117,
+     "last": 1793807501,
+     "url": "https://dexscreener.com/solana/4km4wu8na28qqay9gnmunknzxvfefqpyh3czyse1jlwv",
+     "half": false
+    }
+   ],
+   "trades": 74,
+   "wins": 27,
+   "window": true,
+   "paused": false,
+   "stopped": false,
+   "ts": 1794942222574
+  },
+  "narasi": {
+   "eq": 0.524725,
+   "start": 1.0,
+   "closed_pnl": -0.475275,
+   "positions": 0,
+   "pos": [],
+   "trades": 51,
+   "wins": 15,
+   "window": true,
+   "paused": false,
+   "stopped": false,
+   "ts": 1794942222576
+  }
+ },
+ "trades": [
+  {
+   "mode": "EXCLUSIVE",
+   "sym": "JVOLT",
+   "res": "TRAIL",
+   "pct": 14.82,
+   "pnl": 0.0149,
+   "entry": 0.384,
+   "exit": 0.4428,
+   "closed": "18 Nov 00:44 WIB"
+  },
+  {
+   "mode": "EXCLUSIVE",
+   "sym": "Lucia",
+   "res": "TRAIL",
+   "pct": -0.07,
+   "pnl": -0.0001,
+   "entry": 0.693,
+   "exit": 0.696,
+   "closed": "18 Nov 00:39 WIB"
+  },
+  {
+   "mode": "NARASI",
+   "sym": "JVOLT",
+   "res": "SL",
+   "pct": -25.55,
+   "pnl": -0.0257,
+   "entry": 0.4567,
+   "exit": 0.3422,
+   "closed": "18 Nov 00:28 WIB"
+  },
+  {
+   "mode": "EASY",
+   "sym": "SA",
+   "res": "SL",
+   "pct": -16.31,
+   "pnl": -0.0178,
+   "entry": 0.8627,
+   "exit": 0.7259,
+   "closed": "05 Nov 14:06 WIB"
+  },
+  {
+   "mode": "MEDIUM",
+   "sym": "SA",
+   "res": "SL",
+   "pct": -13.41,
+   "pnl": -0.0127,
+   "entry": 0.7524,
+   "exit": 0.6555,
+   "closed": "05 Nov 14:06 WIB"
+  },
+  {
+   "mode": "MEDIUM",
+   "sym": "RICO",
+   "res": "SL",
+   "pct": -13.4,
+   "pnl": -0.0128,
+   "entry": 0.5749,
+   "exit": 0.5008,
+   "closed": "04 Nov 22:38 WIB"
+  },
+  {
+   "mode": "EASY",
+   "sym": "RICO",
+   "res": "SL",
+   "pct": -16.31,
+   "pnl": -0.0178,
+   "entry": 0.5879,
+   "exit": 0.4947,
+   "closed": "04 Nov 22:38 WIB"
+  },
+  {
+   "mode": "NARASI",
+   "sym": "VI",
+   "res": "SL",
+   "pct": -22.54,
+   "pnl": -0.0227,
+   "entry": 0.8257,
+   "exit": 0.6437,
+   "closed": "04 Nov 22:37 WIB"
+  },
+  {
+   "mode": "EXCLUSIVE",
+   "sym": "LEOMAN",
+   "res": "SL",
+   "pct": -23.29,
+   "pnl": -0.0234,
+   "entry": 0.205,
+   "exit": 0.1583,
+   "closed": "04 Nov 22:36 WIB"
+  },
+  {
+   "mode": "NARASI",
+   "sym": "LEOMAN",
+   "res": "SL",
+   "pct": -21.69,
+   "pnl": -0.0218,
+   "entry": 0.203,
+   "exit": 0.16,
+   "closed": "04 Nov 22:30 WIB"
+  },
+  {
+   "mode": "EXCLUSIVE",
+   "sym": "RAMBO",
+   "res": "SL",
+   "pct": -15.23,
+   "pnl": -0.0153,
+   "entry": 2.4859,
+   "exit": 2.1196,
+   "closed": "04 Nov 22:19 WIB"
+  },
+  {
+   "mode": "EASY",
+   "sym": "GTA",
+   "res": "TRAIL",
+   "pct": 26.39,
+   "pnl": 0.0275,
+   "entry": 0.7601,
+   "exit": 0.9955,
+   "closed": "31 Oct 09:23 WIB"
+  }
+ ],
+ "updated": "18 Nov 2026 02:03 WIB",
+ "updated_ts": 1794942222,
+ "data_terakhir": "18 Nov 2026 00:44 WIB"
+}

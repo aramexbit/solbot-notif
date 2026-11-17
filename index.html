@@ -402,10 +402,12 @@ const KIND_EMOJI={sinyal:'📡',beli:'🟢',jual:'🔴',sl:'🔴',info:'ℹ️'}
 async function fetchLive(){
   if(!viewKey) return;
   try{
-    const r=await fetch('/api/status?k='+encodeURIComponent(viewKey));
-    if(!r.ok) return;
-    const data=await r.json();
-    if(!data.modes || !Object.keys(data.modes).length) return;
+    let data=null, fromFile=false;
+    try{const r=await fetch('/api/status?k='+encodeURIComponent(viewKey));if(r.ok) data=await r.json();}catch(e){}
+    if(!data||!data.modes||!Object.keys(data.modes).length){
+      try{const r2=await fetch('data.json');if(r2.ok){data=await r2.json();fromFile=true;}}catch(e){}
+    }
+    if(!data||!data.modes||!Object.keys(data.modes).length) return;
     let total=0,tw=0,tt=0,tp=0;
     const livePos=[];
     MODES.forEach(m=>{
@@ -433,9 +435,10 @@ async function fetchLive(){
     document.querySelector('.stats').children[1].querySelector('b').textContent=tw+' / '+tt;
     document.querySelector('.stats').children[2].querySelector('b').textContent=String(tp);
     if(livePos.length){POS.length=0;livePos.forEach(p=>POS.push(p));selPos=0;}
-    $('liveBadge').textContent='• ● LIVE '+fmtWIB(Math.floor(Date.now()/1000));
+    $('liveBadge').textContent=fromFile?('• ● DATA BOT '+(data.updated||'')):('• ● LIVE '+fmtWIB(Math.floor(Date.now()/1000)));
     $('liveBadge').style.color='#7ee787';
     renderKiosks();renderMode();renderPos();renderPosDetail();renderWin();
+    if(data.trades&&data.trades.length){TRADES.length=0;data.trades.forEach(t=>TRADES.push(t));renderTrades();}
     const er=await fetch('/api/events?k='+encodeURIComponent(viewKey));
     if(er.ok){
       const ev=await er.json();

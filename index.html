@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SolBot Notif • Pasar Malam — Uji 5 Mode</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0a1a;color:#f5eeda;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:10px 10px 28px}
+header{display:flex;align-items:center;gap:8px;background:#1c1430;border:2px solid #ff9f43;border-radius:14px;padding:10px 12px}
+header h1{font-size:17px;flex:1;line-height:1.2}
+header h1 small{display:block;font-size:12px;color:#7ee787;font-weight:600}
+.iconbtn{background:#2a2145;border:1px solid #ff9f43;color:#fff;border-radius:10px;width:38px;height:38px;font-size:18px;cursor:pointer}
+.stats{display:flex;gap:8px;margin:10px 0}
+.stat{flex:1;background:#1c1430;border:1px solid #4a3a6e;border-radius:10px;padding:8px;text-align:center}
+.stat b{display:block;font-size:15px}
+.stat span{font-size:11px;color:#b9c0d8}
+/* jalan pasar */
+.street{position:relative;border:2px solid #ff9f43;border-radius:14px;overflow:hidden;background:linear-gradient(#1a0f33 0%,#2a1a4a 45%,#3d2417 100%);padding:10px 10px 6px}
+.street .sky{font-size:15px;color:#ffd94d;text-align:center;letter-spacing:2px}
+.buyer{position:absolute;font-size:20px;animation:walk 14s linear infinite;z-index:1;pointer-events:none}
+.buyer.b2{animation-duration:19s;animation-delay:-6s;top:64px}
+.buyer.b3{animation-duration:11s;animation-delay:-3s;top:120px}
+@keyframes walk{0%{left:-8%}100%{left:104%}}
+body.paused .buyer,body.paused .lamp{animation-play-state:paused}
+.kiosk{position:relative;z-index:2;display:flex;gap:10px;align-items:center;background:#241a3d;border:2px solid #4a3a6e;border-radius:12px;padding:10px;margin:8px 0;cursor:pointer;text-align:left;color:#fff;width:100%}
+.kiosk[aria-pressed="true"]{border-color:#ffd94d;background:#33250f;box-shadow:0 0 0 2px #ffd94d55}
+.kiosk.dead{opacity:.8;border-color:#7a1010}
+.kiosk.dead .kem{filter:grayscale(1)}
+.kiosk .kem{font-size:40px;flex:0 0 auto}
+.kiosk .kbody{flex:1;min-width:0;display:block}
+.kiosk .kname{font-size:15px;font-weight:800}
+.kiosk .kname .lamp{font-size:13px;animation:blink 1.6s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.kiosk .kprice{font-size:13px;color:#ffd94d;font-weight:700}
+.kiosk .kwin{display:block;height:8px;background:#171226;border-radius:6px;overflow:hidden;margin-top:5px}
+.kiosk .kwin i{display:block;height:100%;background:linear-gradient(90deg,#37c978,#a8e063)}
+.kiosk .kwin.low i{background:linear-gradient(90deg,#ff5a5a,#ff9a3d)}
+.kiosk .kwin span{font-size:11px;color:#b9c0d8}
+.kiosk .curtain{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#5a1010 0 12px,#3d0a0a 12px 24px);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#ffd9d9}
+.kiosk .crowd{font-size:12px;color:#b9c0d8}
+/* panel */
+.panel{background:#1c1430;border:2px solid #ff9f43;border-radius:14px;padding:14px;margin-top:10px}
+.panel h3{font-size:16px;margin-bottom:8px}
+.hp{height:14px;background:#171226;border-radius:8px;overflow:hidden;margin:8px 0}
+.hp i{display:block;height:100%;background:linear-gradient(90deg,#37c978,#a8e063)}
+.hp.low i{background:linear-gradient(90deg,#ff5a5a,#ff9a3d)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:14px}
+.kv div{background:#241a3d;border-radius:8px;padding:8px}
+.kv span{display:block;font-size:11px;color:#b9c0d8}
+.up{color:#37c978;font-weight:700}.down{color:#ff6b6b;font-weight:700}
+.btn{display:block;width:100%;margin-top:10px;background:linear-gradient(#ffe082,#ff9f43);border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:800;cursor:pointer;color:#221a00}
+.btn.ghost{background:#2a2145;color:#fff;border:1px solid #ff9f43}
+.poslist{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.posbtn{text-align:left;background:#241a3d;border:2px solid #4a3a6e;color:#fff;border-radius:10px;padding:10px;cursor:pointer;font-size:14px}
+.posbtn[aria-pressed="true"]{border-color:#ffd94d}
+.posbtn:disabled{opacity:.55;cursor:not-allowed}
+#chart{width:100%;height:180px;background:#0d1326;border:1px solid #4a3a6e;border-radius:10px;margin-top:10px}
+#chartWrap{display:none}
+#notifBtn{background:linear-gradient(#ffe082,#ff9f43);color:#221a00}
+#notifBtn.on{background:linear-gradient(#37c978,#1d7a44);color:#fff}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111827;border:1px solid #ffd94d;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:9;max-width:90vw;text-align:center}
+#lock{position:fixed;inset:0;background:#0d0a1a;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+#lock .lockcard{background:#1c1430;border:2px solid #ff9f43;border-radius:14px;padding:24px 20px;max-width:380px;width:100%;text-align:center}
+#lock .lockcard h2{margin:10px 0 6px;color:#ffd94d}
+#lock .lockcard p{font-size:14px;color:#b9c0d8;line-height:1.5;margin-bottom:12px}
+#keyInput{width:100%;padding:12px;border:2px solid #4a3a6e;border-radius:10px;background:#0d1326;color:#fff;font-size:15px;margin-bottom:10px;text-align:center}
+.note{font-size:12px;color:#b9c0d8;margin-top:12px;line-height:1.5}
+dialog{border:2px solid #ff9f43;border-radius:14px;background:#1c1430;color:#fff;padding:16px;max-width:480px;width:92vw}
+dialog h3{margin-bottom:8px}
+dialog label{display:block;font-size:13px;margin:10px 0}
+</style>
+</head>
+<body>
+<div id="lock">
+  <div class="lockcard">
+    <div style="font-size:44px">🔐</div>
+    <h2>SolBot Notif</h2>
+    <p>Halaman ini terkunci. Masukkan kunci tampilan untuk membuka, atau buka lewat link yang sudah berisi kunci di ujungnya.</p>
+    <input id="keyInput" type="text" placeholder="Kunci tampilan" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="btn" id="unlockBtn">BUKA</button>
+    <p id="lockErr" style="display:none;color:#ff6b6b;margin:10px 0 0">Kunci salah, coba lagi.</p>
+  </div>
+</div>
+<div class="wrap">
+<header>
+  <span aria-hidden="true">🏮</span>
+  <h1>SolBot Notif • Pasar Malam<small>● CMD online • saldo DEMO • data file bot 18 Nov 00:47 WIB</small></h1>
+  <button class="iconbtn" id="pauseBtn" title="Jeda / lanjutkan animasi" aria-label="Jeda animasi">⏸</button>
+  <button class="iconbtn" id="gearBtn" title="Pengaturan" aria-label="Pengaturan">⚙️</button>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>3.3373 SOL</b><span>Total 5 mode</span></div>
+  <div class="stat"><b>102 / 309</b><span>Menang / total trade</span></div>
+  <div class="stat"><b>0</b><span>Posisi terbuka</span></div>
+</div>
+
+<div class="street" id="street">
+  <div class="sky">🌙 🏮 PASAR MALAM SOLBOT 🏮 🌙</div>
+  <span class="buyer">🚶</span><span class="buyer b2">🚶‍♀️</span><span class="buyer b3">🧑‍🦱</span>
+  <div id="kiosks"></div>
+  <div style="font-size:11px;color:#ffe9a8;text-align:center;padding:2px 0 4px">Ketuk kios = lihat detail mode &nbsp;•&nbsp; Ketuk plang harga = chart saldo</div>
+</div>
+
+<section class="panel" id="modePanel" aria-live="polite">
+  <h3 id="modeTitle">EASY • Tuyul</h3>
+  <div class="hp" id="modeHpWrap"><i id="modeHp" style="width:100%"></i></div>
+  <div style="font-size:13px" id="modeHpText">Saldo 1.0690 / 1.0000 SOL</div>
+  <div class="kv" style="margin-top:10px">
+    <div><span>Saldo</span><b id="mBalance">1.0690 SOL</b></div>
+    <div><span>Perubahan</span><b id="mPct" class="up">+6.9%</b></div>
+    <div><span>Menang</span><b id="mWin">12 / 27</b></div>
+    <div><span>Posisi</span><b id="mPos">0 posisi</b></div>
+    <div><span>Status</span><b id="mStatus">● AKTIF</b></div>
+    <div><span>Monster</span><b id="mMonster">Tuyul</b></div>
+  </div>
+  <button class="btn" id="detailBtn">LIHAT DETAIL</button>
+  <div id="detailExtra" style="display:none;font-size:14px;line-height:1.6;margin-top:10px"></div>
+</section>
+
+<section class="panel">
+  <h3>📊 Posisi terbuka (0)</h3>
+  <div class="poslist" id="posList"></div>
+  <div class="kv">
+    <div><span>Token</span><b id="pToken">—</b></div>
+    <div><span>Perubahan</span><b id="pPct">—</b></div>
+    <div><span>Entry</span><b id="pEntry">—</b></div>
+    <div><span>Sekarang</span><b id="pNow">—</b></div>
+    <div><span>Puncak</span><b id="pPeak">—</b></div>
+    <div><span>SL</span><b id="pSl">—</b></div>
+    <div><span>Modal</span><b id="pCap">—</b></div>
+    <div><span>Nilai</span><b id="pVal">—</b></div>
+    <div><span>Umur</span><b id="pAge">—</b></div>
+    <div><span>Update harga</span><b id="pUpd">—</b></div>
+  </div>
+  <div id="posExtra" style="font-size:13px;line-height:1.5;margin-top:8px">Tidak ada posisi terbuka saat ini.</div>
+  <h3 style="margin-top:14px">🪦 Baru ditutup — $SA (dari file bot)</h3>
+  <div class="poslist" id="closedList"></div>
+  <div style="font-size:12px;color:#b9c0d8;line-height:1.5">Posisi $SA (EXCLUSIVE) sudah dihapus dari tampilan atas permintaan pengguna — itu posisi lama. Dua posisi $SA lain (EASY dan MEDIUM) sudah ditutup bot pada 05 Nov 14:06 karena kena SL.</div>
+  <h3 style="margin-top:14px">🏆 Presentasi kemenangan — win rate per mode</h3>
+  <div id="winList" style="font-size:13px;line-height:1.6"></div>
+  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Total: menang <b style="color:#fff">102 dari 309</b> trade (33.0%). Ketuk bar mode untuk memilih kios itu. EASY paling tinggi (44.4%), MEDIUM paling rendah (18.2%).</div>
+  <h3 style="margin-top:14px">🪙 Koin dibeli &amp; dijual — 12 terbaru dari 309</h3>
+  <div id="tradeList" style="font-size:13px;line-height:1.7"></div>
+  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Setiap baris = satu koin yang dibeli lalu dijual bot. Ketuk baris untuk melihat chart beli → jual koin itu. TRAIL = dijual lewat trailing stop, SL = dijual karena kena stop loss. Harga ditampilkan ×1000 seperti konvensi situs ini.</div>
+</section>
+
+<section class="panel">
+  <h3>🔔 Aktivitas terbaru <span id="liveBadge" style="font-size:11px;color:#b9c0d8">• data file 18 Nov 00:47</span></h3>
+  <div id="eventList" style="font-size:13px;line-height:1.7;color:#d7dce8">Belum ada aktivitas live — bot mengirim peristiwa ke sini begitu jalan.</div>
+  <button class="btn" id="chartBtn">LIHAT CHART SALDO 5 MODE</button>
+  <div id="chartWrap">
+    <svg id="chart" viewBox="0 0 480 180" role="img" aria-label="Grafik saldo 5 mode"></svg>
+    <div id="chartNote" style="font-size:12px;color:#b9c0d8;margin-top:6px">Batang = saldo tiap mode dibanding modal awal 1.0000 SOL (garis kuning). Ini data nyata dari file bot, bukan prediksi.</div>
+  </div>
+</section>
+
+<button class="btn" id="notifBtn" style="margin-top:14px">🔔 Aktifkan notifikasi di HP ini</button>
+
+<p class="note">Halaman ini terkunci dengan kunci tampilan — buka lewat link yang berisi kunci, atau masukkan kuncinya di layar kunci. Kunci aslinya tidak tersimpan di kode situs, hanya hash-nya yang dicek di browser; ini gerbang tampilan, bukan pengaman server. Data DEMO dari file bot SolBot-CMD per 18 Nov 2026 00:47 WIB (modes/*/data/state_paper.json + status.json) — bukan data live. Posisi $SA (EXCLUSIVE) dihapus dari tampilan atas permintaan pengguna — itu posisi lama, harganya terakhir diperbarui di file bot pada 04 Nov 22:51. Dua posisi $SA lain (EASY, MEDIUM) sudah ditutup 05 Nov 14:06 kena SL. Total nyata: 3.3373 SOL, Menang 102/309. Situs ini sekarang live: bot mengirim status ke /api/status &amp; peristiwa ke /api/events (Netlify Functions, kunci bot dicek di server), halaman mengambilnya tiap 60 detik; kunci tampilan juga dicek server untuk data live. Kalau backend belum ada datanya, halaman memakai data file bot per 18 Nov 2026 00:47 WIB. Tombol notifikasi hanya status demo di HP ini (localStorage + izin notifikasi browser); notifikasi bot aslinya lewat Netlify, Telegram di file ini kosong (tidak aktif).</p>
+</div>
+
+<dialog id="settingsDlg">
+  <h3>Pengaturan</h3>
+  <label><input type="checkbox" id="animChk" checked> Animasi pembeli &amp; lampu jalan</label>
+  <label><input type="checkbox" id="notifChk"> Notifikasi aktif</label>
+  <p style="font-size:13px;color:#b9c0d8">Menonaktifkan animasi sama dengan tombol ⏸ di atas. Notifikasi di sini hanya status demo di HP ini, belum terhubung ke server Telegram / bot.</p>
+  <button class="btn ghost" id="lockBtn">🔐 Kunci halaman lagi</button>
+  <button class="btn" id="closeDlg">Tutup</button>
+</dialog>
+
+<div id="toast" role="status"></div>
+
+<script>
+const MODES=[
+ {id:'EASY',monster:'Tuyul',emoji:'🧌',bal:1.0690,pct:6.9,win:12,tot:27,pos:0,status:'AKTIF',dead:false},
+ {id:'MEDIUM',monster:'Pocong',emoji:'👻',bal:0.9458,pct:-5.4,win:2,tot:11,pos:0,status:'AKTIF',dead:false},
+ {id:'HARD',monster:'Buto Ijo',emoji:'👹',bal:0.1190,pct:-88.1,win:46,tot:146,pos:0,status:'MATI — STOP saldo habis',dead:true},
+ {id:'EXCLUSIVE',monster:'Genderuwo',emoji:'🦍',bal:0.6787,pct:-32.1,win:27,tot:74,pos:0,status:'AKTIF',dead:false},
+ {id:'NARASI',monster:'Kuntilanak',emoji:'👩‍🦰',bal:0.5247,pct:-47.5,win:15,tot:51,pos:0,status:'AKTIF',dead:false},
+];
+const POS=[];
+const HIDDEN_POS=[{mode:'EXCLUSIVE',symbol:'SA'}]; // posisi $SA dihapus atas permintaan pengguna (posisi lama) — jangan tampilkan lagi, termasuk dari data live
+const CLOSED=[
+ {label:'DEMO • EASY — $SA',pct:-16.3,entry:0.8627,exit:0.7259,cap:'0.1090 SOL',pnl:'−0.0178 SOL',closed:'05 Nov 14:06 • SL'},
+ {label:'DEMO • MEDIUM — $SA',pct:-13.4,entry:0.7524,exit:0.6555,cap:'0.0943 SOL',pnl:'−0.0127 SOL',closed:'05 Nov 14:06 • SL'},
+];
+// 12 trade terbaru dari 309 total (file bot, history.trades per mode, diurutkan dari yang terbaru).
+// res: TRAIL = jual lewat trailing stop, SL = jual kena stop loss. Harga ×1000 seperti konvensi tampilan situs.
+const TRADES=[
+ {mode:'EXCLUSIVE',sym:'JVOLT',res:'TRAIL',pct:14.82,pnl:0.0149,entry:0.3840,exit:0.4428,closed:'18 Nov 00:44 WIB'},
+ {mode:'EXCLUSIVE',sym:'Lucia',res:'TRAIL',pct:-0.07,pnl:-0.0001,entry:0.6930,exit:0.6960,closed:'18 Nov 00:39 WIB'},
+ {mode:'NARASI',sym:'JVOLT',res:'SL',pct:-25.55,pnl:-0.0257,entry:0.4567,exit:0.3422,closed:'18 Nov 00:28 WIB'},
+ {mode:'EASY',sym:'SA',res:'SL',pct:-16.31,pnl:-0.0178,entry:0.8627,exit:0.7259,closed:'05 Nov 14:06 WIB'},
+ {mode:'MEDIUM',sym:'SA',res:'SL',pct:-13.41,pnl:-0.0127,entry:0.7524,exit:0.6555,closed:'05 Nov 14:06 WIB'},
+ {mode:'MEDIUM',sym:'RICO',res:'SL',pct:-13.40,pnl:-0.0128,entry:0.5749,exit:0.5008,closed:'04 Nov 22:38 WIB'},
+ {mode:'EASY',sym:'RICO',res:'SL',pct:-16.31,pnl:-0.0178,entry:0.5879,exit:0.4947,closed:'04 Nov 22:38 WIB'},
+ {mode:'NARASI',sym:'VI',res:'SL',pct:-22.54,pnl:-0.0227,entry:0.8257,exit:0.6437,closed:'04 Nov 22:37 WIB'},
+ {mode:'EXCLUSIVE',sym:'LEOMAN',res:'SL',pct:-23.29,pnl:-0.0234,entry:0.2050,exit:0.1583,closed:'04 Nov 22:36 WIB'},
+ {mode:'NARASI',sym:'LEOMAN',res:'SL',pct:-21.69,pnl:-0.0218,entry:0.2030,exit:0.1600,closed:'04 Nov 22:30 WIB'},
+ {mode:'EXCLUSIVE',sym:'RAMBO',res:'SL',pct:-15.23,pnl:-0.0153,entry:2.4859,exit:2.1196,closed:'04 Nov 22:19 WIB'},
+ {mode:'EASY',sym:'GTA',res:'TRAIL',pct:26.39,pnl:0.0275,entry:0.7601,exit:0.9955,closed:'31 Oct 09:23 WIB'},
+];
+let selMode=0, selPos=0;
+const $=id=>document.getElementById(id);
+// Gerbang kunci tampilan: kunci asli TIDAK disimpan di kode situs, hanya hash SHA-256-nya.
+const VIEW_HASH='e3c99bb1ab2bb59052805f2ce3eb3f6319bc3b8b04dc7d10cf1ce01d6060800b';
+async function sha256hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+let viewKey='';
+async function tryUnlock(key){
+  if(!key) return false;
+  if(await sha256hex(key.trim())===VIEW_HASH){
+    viewKey=key.trim();
+    localStorage.setItem('solbotView','1');
+    localStorage.setItem('solbotKey',viewKey);
+    $('lock').style.display='none';
+    fetchLive();
+    return true;
+  }
+  return false;
+}
+async function gateInit(){
+  if(localStorage.getItem('solbotView')==='1'){
+    viewKey=localStorage.getItem('solbotKey')||'';
+    $('lock').style.display='none';return;
+  }
+  const m=location.hash.match(/k=([^&]+)/);
+  if(m && await tryUnlock(decodeURIComponent(m[1]))) return;
+}
+gateInit();
+window.addEventListener('hashchange',()=>{ $('lockErr').style.display='none'; gateInit(); });
+$('unlockBtn').onclick=async()=>{
+  if(!await tryUnlock($('keyInput').value)) $('lockErr').style.display='block';
+};
+$('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter') $('unlockBtn').click();});
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
+function fmtPct(v){return (v>0?'+':'')+v.toFixed(1).replace('.',',')+'%'}
+function renderKiosks(){
+ const box=$('kiosks');box.innerHTML='';
+ MODES.forEach((m,i)=>{
+  const rate=(m.win/m.tot*100);
+  const b=document.createElement('button');
+  b.className='kiosk'+(m.dead?' dead':'');
+  b.setAttribute('aria-pressed',i===selMode?'true':'false');
+  const lamp=m.dead?'⚫':(m.pct>=0?'🟢':'🔴');
+  const crowd=m.dead?'Tutup — tidak ada pembeli':(rate>=40?'Ramai sekali':rate>=30?'Cukup ramai':'Sepi');
+  b.innerHTML=`<span class="kem">${m.emoji}</span><span class="kbody">
+    <span class="kname">${m.id} • ${m.monster} <span class="lamp">${lamp}</span></span><br>
+    <span class="kprice">💰 Plang: ${m.bal.toFixed(4)} SOL (${fmtPct(m.pct)})</span>
+    <span class="kwin ${rate<33?'low':''}"><i style="width:${rate.toFixed(1)}%"></i></span>
+    <span class="crowd">Menang ${m.win}/${m.tot} (${rate.toFixed(1).replace('.',',')}%) • ${crowd}</span>
+  </span>${m.dead?'<span class="curtain">🚫 TUTUP — SALDO HABIS</span>':''}`;
+  b.onclick=()=>{selMode=i;renderKiosks();renderMode();};
+  box.appendChild(b);
+ });
+}
+function renderMode(){
+ const m=MODES[selMode];
+ $('modeTitle').textContent=`${m.id} • ${m.monster}`;
+ const hp=Math.min(100,Math.round(m.bal/1*100));
+ $('modeHp').style.width=hp+'%';
+ $('modeHpWrap').classList.toggle('low',m.dead);
+ $('modeHpText').textContent=`Saldo ${m.bal.toFixed(4)} / 1.0000 SOL — HP ${hp}/100`;
+ $('mBalance').textContent=m.bal.toFixed(4)+' SOL';
+ const p=$('mPct');p.textContent=fmtPct(m.pct);p.className=m.pct>=0?'up':'down';
+ $('mWin').textContent=`${m.win} / ${m.tot}`;
+ $('mPos').textContent=`${m.pos} posisi`;
+ $('mStatus').textContent=(m.dead?'● ':'● ')+m.status;
+ $('mStatus').style.color=m.dead?'#ff6b6b':'#37c978';
+ $('mMonster').textContent=m.monster;
+ $('detailExtra').style.display='none';$('detailBtn').textContent='LIHAT DETAIL';
+}
+function renderPos(){
+ const box=$('posList');box.innerHTML='';
+ if(!POS.length){
+  const b=document.createElement('button');b.className='posbtn';b.disabled=true;
+  b.textContent='Tidak ada posisi terbuka — posisi $SA sudah dihapus';
+  box.appendChild(b);
+ }
+ POS.forEach((p,i)=>{
+  const b=document.createElement('button');b.className='posbtn';b.setAttribute('aria-pressed',i===selPos?'true':'false');
+  b.textContent=`${p.label}  •  ${fmtPct(p.pct)}`;
+  b.onclick=()=>{selPos=i;renderPos();renderPosDetail();};
+  box.appendChild(b);
+ });
+ const cb=$('closedList');cb.innerHTML='';
+ CLOSED.forEach(c=>{
+  const d=document.createElement('div');d.className='posbtn';d.style.cursor='default';
+  d.innerHTML=`<b>${c.label}</b> • ${fmtPct(c.pct)}<br><span style="font-size:12px;color:#b9c0d8">Entry $${c.entry.toFixed(4)} → keluar $${c.exit.toFixed(4)} • modal ${c.cap} • PnL ${c.pnl}<br>${c.closed}</span>`;
+  cb.appendChild(d);
+ });
+}
+function renderPosDetail(){
+ const p=POS[selPos];
+ if(!p){
+  $('pToken').textContent='—';
+  const pc=$('pPct');pc.textContent='—';pc.className='';
+  $('pEntry').textContent='—';$('pNow').textContent='—';$('pPeak').textContent='—';$('pSl').textContent='—';
+  $('pCap').textContent='—';$('pVal').textContent='—';$('pAge').textContent='—';$('pUpd').textContent='—';
+  $('posExtra').textContent='Tidak ada posisi terbuka saat ini.';
+  return;
+ }
+ $('pToken').textContent=p.label.split('— ')[1]||'—';
+ const pc=$('pPct');pc.textContent=fmtPct(p.pct);pc.className=p.pct>=0?'up':'down';
+ $('pEntry').textContent='$'+p.entry.toFixed(4);
+ $('pNow').textContent='$'+p.now.toFixed(4);
+ $('pPeak').textContent='+'+p.peak.toFixed(1).replace('.',',')+'%';
+ $('pSl').textContent=p.sl.toFixed(1).replace('.',',')+'%';
+ $('pCap').textContent=p.cap;$('pVal').textContent=p.val;$('pAge').textContent=p.age;$('pUpd').textContent=p.upd;
+ if(p.tp1){$('posExtra').innerHTML=`TP1 <b class="up">+${((p.tp1/p.entry-1)*100).toFixed(0)}% ($${p.tp1.toFixed(4)})</b> • SL ${p.sl.toFixed(1).replace('.',',')}%${p.url?` • <a href="${p.url}" target="_blank" rel="noopener" style="color:#ffd94d">DexScreener</a>`:''}`;}
+ if($('chartWrap').style.display==='block') drawBalanceChart();
+}
+// Chart 1: batang saldo 5 mode vs modal awal 1.0000 SOL (garis kuning).
+function drawBalanceChart(){
+ const W=480,H=180,pad=34,bw=56,gap=(W-pad*2-5*bw)/4;
+ const mx=1.1, Y=v=>H-24-(v/mx)*(H-48), X=i=>pad+i*(bw+gap);
+ let s=`<line x1="${pad}" y1="${Y(1)}" x2="${W-10}" y2="${Y(1)}" stroke="#ffd94d" stroke-dasharray="6 5" stroke-width="2"/><text x="${W-12}" y="${Y(1)-6}" fill="#ffd94d" font-size="11" text-anchor="end">Modal awal 1.0000 SOL</text>`;
+ MODES.forEach((m,i)=>{
+  const h=Y(0)-Y(m.bal), col=m.dead?'#ff5a5a':(m.pct>=0?'#37c978':'#ff9a3d');
+  s+=`<rect x="${X(i)}" y="${Y(m.bal)}" width="${bw}" height="${h}" rx="6" fill="${col}"/><text x="${X(i)+bw/2}" y="${Y(m.bal)-6}" fill="#fff" font-size="12" text-anchor="middle">${m.bal.toFixed(4)}</text><text x="${X(i)+bw/2}" y="${H-8}" fill="#b9c0d8" font-size="11" text-anchor="middle">${m.id}</text>`;
+ });
+ $('chart').innerHTML=s;
+ $('chartNote').textContent='Batang = saldo tiap mode dibanding modal awal 1.0000 SOL (garis kuning). Ini data nyata dari file bot, bukan prediksi.';
+ $('chartBtn').textContent='TUTUP CHART SALDO 5 MODE';
+}
+// Chart 2: garis beli → jual satu trade (2 titik nyata dari file bot).
+function drawTradeChart(t){
+ const W=480,H=180;
+ const all=[t.entry,t.exit], mn=Math.min(...all)*0.98, mx=Math.max(...all)*1.02;
+ const X=i=>60+i*340, Y=v=>150-(v-mn)/(mx-mn)*110;
+ const col=t.pct>=0?'#37c978':'#ff5a5a';
+ let s=`<polyline points="${X(0)},${Y(t.entry)} ${X(1)},${Y(t.exit)}" fill="none" stroke="${col}" stroke-width="3"/>`;
+ s+=`<circle cx="${X(0)}" cy="${Y(t.entry)}" r="6" fill="#ffd94d"/><text x="${X(0)}" y="${Y(t.entry)-12}" fill="#fff" font-size="13">Beli $${t.entry.toFixed(4)}</text>`;
+ s+=`<circle cx="${X(1)}" cy="${Y(t.exit)}" r="6" fill="${col}"/><text x="${X(1)}" y="${Y(t.exit)-12}" fill="#fff" font-size="13" text-anchor="end">Jual $${t.exit.toFixed(4)}</text>`;
+ s+=`<text x="60" y="172" fill="#b9c0d8" font-size="11">$${t.sym} • ${t.mode} • ${t.res} • ${t.closed} • ${t.pct>=0?'+':''}${t.pct.toFixed(2)}% (${t.pnl>=0?'+':''}${t.pnl.toFixed(4)} SOL)</text>`;
+ $('chart').innerHTML=s;
+ $('chartNote').textContent='Garis beli → jual koin ini. Hanya 2 titik nyata dari file bot (entry dan exit), bukan riwayat harga lengkap.';
+ $('chartBtn').textContent='TUTUP CHART TRADE';
+}
+$('detailBtn').onclick=()=>{
+ const m=MODES[selMode];const ex=$('detailExtra');
+ if(ex.style.display==='block'){ex.style.display='none';$('detailBtn').textContent='LIHAT DETAIL';return;}
+ const rate=(m.win/m.tot*100).toFixed(1).replace('.',',');
+ ex.innerHTML=`Win rate <b>${rate}%</b> (${m.win} menang dari ${m.tot} trade). Saldo awal 1.0000 SOL, sekarang <b>${m.bal.toFixed(4)} SOL</b> (${fmtPct(m.pct)}). ${m.dead?'Kios ini TUTUP karena saldo habis — tirai diturunkan dan tidak bisa dipilih lagi sampai saldo di-reset.':'Kios ini masih buka.'}`;
+ ex.style.display='block';$('detailBtn').textContent='TUTUP DETAIL';
+};
+$('chartBtn').onclick=()=>{
+ const w=$('chartWrap');const open=w.style.display==='block';
+ w.style.display=open?'none':'block';
+ if(open){$('chartBtn').textContent='LIHAT CHART SALDO 5 MODE';return;}
+ drawBalanceChart();
+};
+function renderWin(){
+ const box=$('winList');box.innerHTML='';
+ MODES.forEach((m,i)=>{
+  const rate=(m.win/m.tot*100);
+  const row=document.createElement('div');
+  row.style.cssText='margin:6px 0;cursor:pointer';
+  row.innerHTML=`<div style="display:flex;justify-content:space-between"><span>${m.emoji} ${m.id} — ${m.monster}</span><b style="color:${rate>=33?'#37c978':'#ff6b6b'}">${rate.toFixed(1).replace('.',',')}% (${m.win}/${m.tot})</b></div><div style="background:#171226;border-radius:6px;height:10px;margin-top:3px"><div style="width:${rate.toFixed(1)}%;background:${rate>=33?'#37c978':'#ff6b6b'};height:10px;border-radius:6px"></div></div>`;
+  row.onclick=()=>{selMode=i;renderKiosks();renderMode();document.querySelector('.street').scrollIntoView({behavior:'smooth'});};
+  box.appendChild(row);
+ });
+}
+function renderTrades(){
+ const box=$('tradeList');box.innerHTML='';
+ TRADES.forEach(t=>{
+  const win=t.pct>=0;
+  const row=document.createElement('div');
+  row.style.cssText='border-bottom:1px solid #2a2145;padding:6px 0;cursor:pointer';
+  row.innerHTML=`<div style="display:flex;justify-content:space-between"><b>$${t.sym}</b><span style="color:#b9c0d8;font-size:12px">${t.mode} • ${t.res} • ${t.closed}</span></div><div style="display:flex;justify-content:space-between"><span style="color:#b9c0d8">Beli $${t.entry.toFixed(4)} → Jual $${t.exit.toFixed(4)}</span><b style="color:${win?'#37c978':'#ff6b6b'}">${win?'+':''}${t.pct.toFixed(2).replace('.',',')}% (${win?'+':''}${t.pnl.toFixed(4)} SOL)</b></div>`;
+  row.onclick=()=>{drawTradeChart(t);$('chartWrap').style.display='block';document.querySelector('#chartWrap').scrollIntoView({behavior:'smooth',block:'center'});};
+  box.appendChild(row);
+ });
+}
+let notifOn=localStorage.getItem('solbotNotif')==='1';
+function renderNotif(){
+ const b=$('notifBtn');b.classList.toggle('on',notifOn);
+ b.textContent=notifOn?'🔔 Notifikasi AKTIF — ketuk untuk mematikan':'🔔 Aktifkan notifikasi di HP ini';
+ $('notifChk').checked=notifOn;
+}
+$('notifBtn').onclick=async()=>{
+ notifOn=!notifOn;localStorage.setItem('solbotNotif',notifOn?'1':'0');renderNotif();
+ if(notifOn&&'Notification' in window){try{await Notification.requestPermission();}catch(e){}}
+ toast(notifOn?'Notifikasi diaktifkan di HP ini':'Notifikasi dimatikan');
+};
+function setPaused(p){document.body.classList.toggle('paused',p);$('pauseBtn').textContent=p?'▶':'⏸';$('animChk').checked=!p;}
+$('pauseBtn').onclick=()=>setPaused(!document.body.classList.contains('paused'));
+$('gearBtn').onclick=()=>$('settingsDlg').showModal();
+$('closeDlg').onclick=()=>$('settingsDlg').close();
+$('lockBtn').onclick=()=>{localStorage.removeItem('solbotView');localStorage.removeItem('solbotKey');location.hash='';location.reload();};
+// ---- Data live dari bot (Netlify Functions + Blobs) ----
+function fmtWIB(tsSec){
+  try{return new Date(tsSec*1000).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).replace('.','');}catch(e){return '—';}
+}
+function fmtAge(openedSec){
+  const mins=Math.max(0,Math.round((Date.now()/1000-openedSec)/60));
+  return Math.floor(mins/60)+' jam '+(mins%60)+' mnt';
+}
+const KIND_EMOJI={sinyal:'📡',beli:'🟢',jual:'🔴',sl:'🔴',info:'ℹ️'};
+async function fetchLive(){
+  if(!viewKey) return;
+  try{
+    const r=await fetch('/api/status?k='+encodeURIComponent(viewKey));
+    if(!r.ok) return;
+    const data=await r.json();
+    if(!data.modes || !Object.keys(data.modes).length) return;
+    let total=0,tw=0,tt=0,tp=0;
+    const livePos=[];
+    MODES.forEach(m=>{
+      const d=data.modes[m.id.toLowerCase()];
+      if(!d) return;
+      m.bal=+(d.eq||0); m.pct=+(((d.eq||0)/(d.start||1)-1)*100).toFixed(1);
+      m.win=d.wins||0; m.tot=d.trades||0; m.pos=d.positions||0;
+      if(d.stopped){m.dead=true;m.status='MATI — STOP saldo habis';}
+      total+=m.bal; tw+=m.win; tt+=m.tot;
+      let vis=0;
+      (d.pos||[]).forEach(p=>{
+        if(HIDDEN_POS.some(h=>h.mode===m.id && (p.symbol||'')===h.symbol)) return;
+        vis++;
+        const entry=p.entry||0, px=p.px||entry;
+        livePos.push({label:`DEMO • ${m.id} — $${p.symbol||'?'}`,pct:+((px/entry-1)*100).toFixed(1),
+          entry:+(entry*1000).toFixed(4),now:+(px*1000).toFixed(4),
+          peak:+(((p.peak||entry)/entry-1)*100).toFixed(1),sl:+(((p.sl||entry)/entry-1)*100).toFixed(1),
+          cap:(p.cost||0)+' SOL',val:(p.value||0)+' SOL',age:fmtAge(p.opened||0),upd:fmtWIB(p.last||p.opened||0),
+          tp1:p.tp?+(p.tp*1000).toFixed(4):null,url:p.url||''});
+      });
+      m.pos=vis;
+    });
+    tp=livePos.length;
+    document.querySelector('.stats').children[0].querySelector('b').textContent=total.toFixed(4)+' SOL';
+    document.querySelector('.stats').children[1].querySelector('b').textContent=tw+' / '+tt;
+    document.querySelector('.stats').children[2].querySelector('b').textContent=String(tp);
+    if(livePos.length){POS.length=0;livePos.forEach(p=>POS.push(p));selPos=0;}
+    $('liveBadge').textContent='• ● LIVE '+fmtWIB(Math.floor(Date.now()/1000));
+    $('liveBadge').style.color='#7ee787';
+    renderKiosks();renderMode();renderPos();renderPosDetail();renderWin();
+    const er=await fetch('/api/events?k='+encodeURIComponent(viewKey));
+    if(er.ok){
+      const ev=await er.json();
+      if(ev.events && ev.events.length){
+        $('eventList').innerHTML=ev.events.slice(0,5).map(e=>
+          `<div>${KIND_EMOJI[e.kind]||'ℹ️'} <b>[${(e.mode||'').toUpperCase()}]</b> ${e.title.replace(/</g,'&lt;')}<br><span style="color:#b9c0d8;font-size:12px">${fmtWIB(Math.floor((e.ts||0)/1000))}${e.pnl!=null?' • '+(e.pnl>0?'+':'')+e.pnl+'%':''}</span></div>`).join('');
+      }
+    }
+  }catch(e){/* tetap tampilkan data file */}
+}
+$('animChk').onchange=e=>setPaused(!e.target.checked);
+$('notifChk').onchange=e=>{notifOn=e.target.checked;localStorage.setItem('solbotNotif',notifOn?'1':'0');renderNotif();};
+renderKiosks();renderMode();renderPos();renderPosDetail();renderNotif();renderWin();renderTrades();
+fetchLive();setInterval(fetchLive,60000);
+</script>
+</body>
+</html>

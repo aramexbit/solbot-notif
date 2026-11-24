@@ -1,0 +1,13 @@
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Content-Type = "text/html; charset=utf-8"
+
+[build]
+  functions = "netlify/functions"
+
+# Backend bot: /api/status dan /api/events diteruskan ke Netlify Functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

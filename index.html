@@ -3,71 +3,71 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SolBot Notif • Pasar Malam — Uji 5 Mode</title>
+<title>SolBot Notif • Uji 5 Mode — Tower Defense</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d0a1a;color:#f5eeda;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+body{background:#0b1020;color:#f5eeda;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
 .wrap{max-width:520px;margin:0 auto;padding:10px 10px 28px}
-header{display:flex;align-items:center;gap:8px;background:#1c1430;border:2px solid #ff9f43;border-radius:14px;padding:10px 12px}
+header{display:flex;align-items:center;gap:8px;background:#141a2e;border:2px solid #c9a227;border-radius:14px;padding:10px 12px}
 header h1{font-size:17px;flex:1;line-height:1.2}
 header h1 small{display:block;font-size:12px;color:#7ee787;font-weight:600}
-.iconbtn{background:#2a2145;border:1px solid #ff9f43;color:#fff;border-radius:10px;width:38px;height:38px;font-size:18px;cursor:pointer}
+.iconbtn{background:#222b45;border:1px solid #c9a227;color:#fff;border-radius:10px;width:38px;height:38px;font-size:18px;cursor:pointer}
 .stats{display:flex;gap:8px;margin:10px 0}
-.stat{flex:1;background:#1c1430;border:1px solid #4a3a6e;border-radius:10px;padding:8px;text-align:center}
+.stat{flex:1;background:#1a2138;border:1px solid #3a4668;border-radius:10px;padding:8px;text-align:center}
 .stat b{display:block;font-size:15px}
 .stat span{font-size:11px;color:#b9c0d8}
-/* jalan pasar */
-.street{position:relative;border:2px solid #ff9f43;border-radius:14px;overflow:hidden;background:linear-gradient(#1a0f33 0%,#2a1a4a 45%,#3d2417 100%);padding:10px 10px 6px}
-.street .sky{font-size:15px;color:#ffd94d;text-align:center;letter-spacing:2px}
-.buyer{position:absolute;font-size:20px;animation:walk 14s linear infinite;z-index:1;pointer-events:none}
-.buyer.b2{animation-duration:19s;animation-delay:-6s;top:64px}
-.buyer.b3{animation-duration:11s;animation-delay:-3s;top:120px}
-@keyframes walk{0%{left:-8%}100%{left:104%}}
-body.paused .buyer,body.paused .lamp{animation-play-state:paused}
-.kiosk{position:relative;z-index:2;display:flex;gap:10px;align-items:center;background:#241a3d;border:2px solid #4a3a6e;border-radius:12px;padding:10px;margin:8px 0;cursor:pointer;text-align:left;color:#fff;width:100%}
-.kiosk[aria-pressed="true"]{border-color:#ffd94d;background:#33250f;box-shadow:0 0 0 2px #ffd94d55}
-.kiosk.dead{opacity:.8;border-color:#7a1010}
-.kiosk.dead .kem{filter:grayscale(1)}
-.kiosk .kem{font-size:40px;flex:0 0 auto}
-.kiosk .kbody{flex:1;min-width:0;display:block}
-.kiosk .kname{font-size:15px;font-weight:800}
-.kiosk .kname .lamp{font-size:13px;animation:blink 1.6s steps(2) infinite}
-@keyframes blink{50%{opacity:.35}}
-.kiosk .kprice{font-size:13px;color:#ffd94d;font-weight:700}
-.kiosk .kwin{display:block;height:8px;background:#171226;border-radius:6px;overflow:hidden;margin-top:5px}
-.kiosk .kwin i{display:block;height:100%;background:linear-gradient(90deg,#37c978,#a8e063)}
-.kiosk .kwin.low i{background:linear-gradient(90deg,#ff5a5a,#ff9a3d)}
-.kiosk .kwin span{font-size:11px;color:#b9c0d8}
-.kiosk .curtain{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#5a1010 0 12px,#3d0a0a 12px 24px);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#ffd9d9}
-.kiosk .crowd{font-size:12px;color:#b9c0d8}
-/* panel */
-.panel{background:#1c1430;border:2px solid #ff9f43;border-radius:14px;padding:14px;margin-top:10px}
+/* scene */
+.scene{position:relative;height:260px;border:2px solid #c9a227;border-radius:14px;overflow:hidden;background:linear-gradient(#0e1a3a 0%,#1d3a2a 55%,#2a2118 100%)}
+.moon{position:absolute;top:14px;right:18px;font-size:34px}
+.house{position:absolute;font-size:44px;opacity:.95}
+.path{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(#6b4f2a,#4a3520);clip-path:polygon(38% 0,62% 0,100% 100%,0 100%)}
+.tower{position:absolute;left:50%;top:62px;transform:translateX(-50%);text-align:center;cursor:pointer;background:none;border:0;color:#fff}
+.tower .t{font-size:64px;filter:drop-shadow(0 4px 6px #000)}
+.tower .ring{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:110px;height:22px;border:2px dashed #ffd94d;border-radius:50%}
+.tower small{display:block;background:#000a;padding:3px 8px;border-radius:8px;font-size:12px}
+.enemy{position:absolute;bottom:18px;left:8%;font-size:44px;cursor:pointer;animation:walk 9s linear infinite;z-index:2;background:none;border:0}
+.enemy .tag{position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#7a1010;color:#fff;font-size:12px;padding:2px 7px;border-radius:8px}
+.enemy .dmg{position:absolute;top:-48px;right:-8px;color:#ff5a5a;font-weight:800;font-size:20px;animation:dmg 2s ease-out infinite}
+@keyframes walk{0%{left:6%}50%{left:46%}100%{left:86%}}
+@keyframes dmg{0%{opacity:0;transform:translateY(6px)}30%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+body.paused .enemy,body.paused .enemy .dmg{animation-play-state:paused}
+.scene .hint{position:absolute;left:10px;bottom:8px;font-size:11px;background:#000a;padding:4px 8px;border-radius:8px;color:#ffe9a8}
+/* mode picker */
+h2{font-size:14px;margin:14px 2px 6px;color:#ffd94d}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px}
+.modebtn{background:#1a2138;border:2px solid #3a4668;border-radius:10px;padding:8px 4px;color:#fff;cursor:pointer;font-size:12px;line-height:1.3}
+.modebtn .em{font-size:24px;display:block}
+.modebtn[aria-pressed="true"]{border-color:#ffd94d;background:#2a2410;box-shadow:0 0 0 2px #ffd94d55}
+.modebtn.dead{opacity:.75;border-color:#7a1010}
+.modebtn.dead .em{filter:grayscale(1)}
+/* panels */
+.panel{background:#141a2e;border:2px solid #c9a227;border-radius:14px;padding:14px;margin-top:10px}
 .panel h3{font-size:16px;margin-bottom:8px}
-.hp{height:14px;background:#171226;border-radius:8px;overflow:hidden;margin:8px 0}
+.hp{height:14px;background:#222;border-radius:8px;overflow:hidden;margin:8px 0}
 .hp i{display:block;height:100%;background:linear-gradient(90deg,#37c978,#a8e063)}
 .hp.low i{background:linear-gradient(90deg,#ff5a5a,#ff9a3d)}
 .kv{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:14px}
-.kv div{background:#241a3d;border-radius:8px;padding:8px}
+.kv div{background:#1e2742;border-radius:8px;padding:8px}
 .kv span{display:block;font-size:11px;color:#b9c0d8}
 .up{color:#37c978;font-weight:700}.down{color:#ff6b6b;font-weight:700}
-.btn{display:block;width:100%;margin-top:10px;background:linear-gradient(#ffe082,#ff9f43);border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:800;cursor:pointer;color:#221a00}
-.btn.ghost{background:#2a2145;color:#fff;border:1px solid #ff9f43}
+.btn{display:block;width:100%;margin-top:10px;background:linear-gradient(#ffe082,#c9a227);border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:800;cursor:pointer;color:#221a00}
+.btn.ghost{background:#222b45;color:#fff;border:1px solid #c9a227}
 .poslist{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
-.posbtn{text-align:left;background:#241a3d;border:2px solid #4a3a6e;color:#fff;border-radius:10px;padding:10px;cursor:pointer;font-size:14px}
+.posbtn{text-align:left;background:#1e2742;border:2px solid #3a4668;color:#fff;border-radius:10px;padding:10px;cursor:pointer;font-size:14px}
 .posbtn[aria-pressed="true"]{border-color:#ffd94d}
 .posbtn:disabled{opacity:.55;cursor:not-allowed}
-#chart{width:100%;height:180px;background:#0d1326;border:1px solid #4a3a6e;border-radius:10px;margin-top:10px}
+#chart{width:100%;height:180px;background:#0d1326;border:1px solid #3a4668;border-radius:10px;margin-top:10px}
 #chartWrap{display:none}
-#notifBtn{background:linear-gradient(#ffe082,#ff9f43);color:#221a00}
+#notifBtn{background:linear-gradient(#ffe082,#c9a227);color:#221a00}
 #notifBtn.on{background:linear-gradient(#37c978,#1d7a44);color:#fff}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111827;border:1px solid #ffd94d;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:9;max-width:90vw;text-align:center}
-#lock{position:fixed;inset:0;background:#0d0a1a;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
-#lock .lockcard{background:#1c1430;border:2px solid #ff9f43;border-radius:14px;padding:24px 20px;max-width:380px;width:100%;text-align:center}
+#lock{position:fixed;inset:0;background:#0b1020;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+#lock .lockcard{background:#141a2e;border:2px solid #c9a227;border-radius:14px;padding:24px 20px;max-width:380px;width:100%;text-align:center}
 #lock .lockcard h2{margin:10px 0 6px;color:#ffd94d}
 #lock .lockcard p{font-size:14px;color:#b9c0d8;line-height:1.5;margin-bottom:12px}
-#keyInput{width:100%;padding:12px;border:2px solid #4a3a6e;border-radius:10px;background:#0d1326;color:#fff;font-size:15px;margin-bottom:10px;text-align:center}
+#keyInput{width:100%;padding:12px;border:2px solid #3a4668;border-radius:10px;background:#0d1326;color:#fff;font-size:15px;margin-bottom:10px;text-align:center}
 .note{font-size:12px;color:#b9c0d8;margin-top:12px;line-height:1.5}
-dialog{border:2px solid #ff9f43;border-radius:14px;background:#1c1430;color:#fff;padding:16px;max-width:480px;width:92vw}
+dialog{border:2px solid #c9a227;border-radius:14px;background:#141a2e;color:#fff;padding:16px;max-width:480px;width:92vw}
 dialog h3{margin-bottom:8px}
 dialog label{display:block;font-size:13px;margin:10px 0}
 </style>
@@ -85,8 +85,8 @@ dialog label{display:block;font-size:13px;margin:10px 0}
 </div>
 <div class="wrap">
 <header>
-  <span aria-hidden="true">🏮</span>
-  <h1>SolBot Notif • Pasar Malam<small>● CMD online • saldo DEMO • data file bot 18 Nov 00:47 WIB</small></h1>
+  <span aria-hidden="true">🔔</span>
+  <h1>SolBot Notif • Uji 5 Mode<small>● CMD online • saldo DEMO • data file bot 18 Nov 00:47 WIB</small></h1>
   <button class="iconbtn" id="pauseBtn" title="Jeda / lanjutkan animasi" aria-label="Jeda animasi">⏸</button>
   <button class="iconbtn" id="gearBtn" title="Pengaturan" aria-label="Pengaturan">⚙️</button>
 </header>
@@ -97,12 +97,24 @@ dialog label{display:block;font-size:13px;margin:10px 0}
   <div class="stat"><b>0</b><span>Posisi terbuka</span></div>
 </div>
 
-<div class="street" id="street">
-  <div class="sky">🌙 🏮 PASAR MALAM SOLBOT 🏮 🌙</div>
-  <span class="buyer">🚶</span><span class="buyer b2">🚶‍♀️</span><span class="buyer b3">🧑‍🦱</span>
-  <div id="kiosks"></div>
-  <div style="font-size:11px;color:#ffe9a8;text-align:center;padding:2px 0 4px">Ketuk kios = lihat detail mode &nbsp;•&nbsp; Ketuk plang harga = chart saldo</div>
+<div class="scene" id="scene">
+  <div class="moon">🌙</div>
+  <div class="house" style="left:8px;top:88px">🏠</div>
+  <div class="house" style="right:10px;top:70px">🕌</div>
+  <div class="house" style="left:22px;top:150px;font-size:34px">🏠</div>
+  <div class="path"></div>
+  <button class="tower" id="towerBtn" title="Ketuk menara: pilih mode">
+    <span class="t">🗼</span><span class="ring"></span>
+    <small id="towerLabel">Menara EASY • Tuyul</small>
+  </button>
+  <button class="enemy" id="enemyBtn" title="Ketuk musuh: lihat posisi $SA">
+    <span class="tag">$SA +2.2%</span><span class="dmg">+22</span>🧌
+  </button>
+  <div class="hint">Ketuk menara = ganti mode &nbsp;•&nbsp; Ketuk musuh = posisi terbuka</div>
 </div>
+
+<h2>⚔️ Pilih mode — ketuk untuk lihat detail</h2>
+<div class="modes" id="modes" role="group" aria-label="Pilih mode"></div>
 
 <section class="panel" id="modePanel" aria-live="polite">
   <h3 id="modeTitle">EASY • Tuyul</h3>
@@ -141,30 +153,31 @@ dialog label{display:block;font-size:13px;margin:10px 0}
   <div style="font-size:12px;color:#b9c0d8;line-height:1.5">Posisi $SA (EXCLUSIVE) sudah dihapus dari tampilan atas permintaan pengguna — itu posisi lama. Dua posisi $SA lain (EASY dan MEDIUM) sudah ditutup bot pada 05 Nov 14:06 karena kena SL.</div>
   <h3 style="margin-top:14px">🏆 Presentasi kemenangan — win rate per mode</h3>
   <div id="winList" style="font-size:13px;line-height:1.6"></div>
-  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Total: menang <b style="color:#fff">102 dari 309</b> trade (33.0%). Ketuk bar mode untuk memilih kios itu. EASY paling tinggi (44.4%), MEDIUM paling rendah (18.2%).</div>
+  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Total: menang <b style="color:#fff">102 dari 309</b> trade (33.0%). Ketuk bar mode untuk memilih mode itu. EASY paling tinggi (44.4%), MEDIUM paling rendah (18.2%).</div>
   <h3 style="margin-top:14px">🪙 Koin dibeli &amp; dijual — 12 terbaru dari 309</h3>
   <div id="tradeList" style="font-size:13px;line-height:1.7"></div>
-  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Setiap baris = satu koin yang dibeli lalu dijual bot. Ketuk baris untuk melihat chart beli → jual koin itu. TRAIL = dijual lewat trailing stop, SL = dijual karena kena stop loss. Harga ditampilkan ×1000 seperti konvensi situs ini.</div>
+  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Setiap baris = satu koin yang dibeli lalu dijual bot. TRAIL = dijual lewat trailing stop, SL = dijual karena kena stop loss. Harga ditampilkan ×1000 seperti konvensi situs ini.</div>
 </section>
 
 <section class="panel">
   <h3>🔔 Aktivitas terbaru <span id="liveBadge" style="font-size:11px;color:#b9c0d8">• data file 18 Nov 00:47</span></h3>
   <div id="eventList" style="font-size:13px;line-height:1.7;color:#d7dce8">Belum ada aktivitas live — bot mengirim peristiwa ke sini begitu jalan.</div>
-  <button class="btn" id="chartBtn">LIHAT CHART SALDO 5 MODE</button>
+</section>
+  <button class="btn" id="chartBtn">LIHAT CHART</button>
   <div id="chartWrap">
-    <svg id="chart" viewBox="0 0 480 180" role="img" aria-label="Grafik saldo 5 mode"></svg>
-    <div id="chartNote" style="font-size:12px;color:#b9c0d8;margin-top:6px">Batang = saldo tiap mode dibanding modal awal 1.0000 SOL (garis kuning). Ini data nyata dari file bot, bukan prediksi.</div>
+    <svg id="chart" viewBox="0 0 480 180" role="img" aria-label="Grafik Entry, Puncak, Sekarang"></svg>
+    <div style="font-size:12px;color:#b9c0d8;margin-top:6px">Garis: Entry → Puncak → Sekarang. Garis merah putus-putus = SL. Ini bukan riwayat harga lengkap, hanya 3 titik dari data posisi.</div>
   </div>
 </section>
 
 <button class="btn" id="notifBtn" style="margin-top:14px">🔔 Aktifkan notifikasi di HP ini</button>
 
-<p class="note">Halaman ini terkunci dengan kunci tampilan — buka lewat link yang berisi kunci, atau masukkan kuncinya di layar kunci. Kunci aslinya tidak tersimpan di kode situs, hanya hash-nya yang dicek di browser; ini gerbang tampilan, bukan pengaman server. Data DEMO dari file bot SolBot-CMD per 18 Nov 2026 00:47 WIB (modes/*/data/state_paper.json + status.json) — bukan data live. Posisi $SA (EXCLUSIVE) dihapus dari tampilan atas permintaan pengguna — itu posisi lama, harganya terakhir diperbarui di file bot pada 04 Nov 22:51. Dua posisi $SA lain (EASY, MEDIUM) sudah ditutup 05 Nov 14:06 kena SL. Total nyata: 3.3373 SOL, Menang 102/309. Situs ini sekarang live: bot mengirim status ke /api/status &amp; peristiwa ke /api/events (Netlify Functions, kunci bot dicek di server), halaman mengambilnya tiap 60 detik; kunci tampilan juga dicek server untuk data live. Kalau backend belum ada datanya, halaman memakai data file bot per 18 Nov 2026 00:47 WIB. Tombol notifikasi hanya status demo di HP ini (localStorage + izin notifikasi browser); notifikasi bot aslinya lewat Netlify, Telegram di file ini kosong (tidak aktif). Mode DEMO-EASY (demo, beli 25%/trade, tanpa minimal $5) tampil sebagai kios ke-6; notifikasinya masuk begitu backend baru tayang.</p>
+<p class="note">Halaman ini terkunci dengan kunci tampilan — buka lewat link yang berisi kunci, atau masukkan kuncinya di layar kunci. Kunci aslinya tidak tersimpan di kode situs, hanya hash-nya yang dicek di browser; ini gerbang tampilan, bukan pengaman server. Data DEMO dari file bot SolBot-CMD per 18 Nov 2026 00:47 WIB (modes/*/data/state_paper.json + status.json) — bukan data live. Posisi $SA (EXCLUSIVE) dihapus dari tampilan atas permintaan pengguna — itu posisi lama, harganya terakhir diperbarui di file bot pada 04 Nov 22:51. Dua posisi $SA lain (EASY, MEDIUM) sudah ditutup 05 Nov 14:06 kena SL. Total nyata: 3.3373 SOL, Menang 102/309. Situs ini sekarang live: bot mengirim status ke /api/status &amp; peristiwa ke /api/events (Netlify Functions, kunci bot dicek di server), halaman mengambilnya tiap 60 detik; kunci tampilan juga dicek server untuk data live. Kalau backend belum ada datanya, halaman memakai data file bot per 18 Nov 2026 00:47 WIB. Tombol notifikasi hanya status demo di HP ini (localStorage + izin notifikasi browser); notifikasi bot aslinya lewat Netlify, Telegram di file ini kosong (tidak aktif). Mode DEMO-EASY (demo, beli 25%/trade, tanpa minimal $5) tampil sebagai mode ke-6; notifikasinya masuk begitu backend baru tayang.</p>
 </div>
 
 <dialog id="settingsDlg">
   <h3>Pengaturan</h3>
-  <label><input type="checkbox" id="animChk" checked> Animasi pembeli &amp; lampu jalan</label>
+  <label><input type="checkbox" id="animChk" checked> Animasi musuh &amp; menara jalan</label>
   <label><input type="checkbox" id="notifChk"> Notifikasi aktif</label>
   <p style="font-size:13px;color:#b9c0d8">Menonaktifkan animasi sama dengan tombol ⏸ di atas. Notifikasi di sini hanya status demo di HP ini, belum terhubung ke server Telegram / bot.</p>
   <button class="btn ghost" id="lockBtn">🔐 Kunci halaman lagi</button>
@@ -207,6 +220,7 @@ const TRADES=[
 let selMode=0, selPos=0;
 const $=id=>document.getElementById(id);
 // Gerbang kunci tampilan: kunci asli TIDAK disimpan di kode situs, hanya hash SHA-256-nya.
+// Buka lewat #k=... di URL, kunci yang dimasukkan, atau flag yang tersimpan di HP ini.
 const VIEW_HASH='e3c99bb1ab2bb59052805f2ce3eb3f6319bc3b8b04dc7d10cf1ce01d6060800b';
 async function sha256hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 let viewKey='';
@@ -231,6 +245,8 @@ async function gateInit(){
   if(m && await tryUnlock(decodeURIComponent(m[1]))) return;
 }
 gateInit();
+// Bila pengguna menempel link berkunci saat halaman sedang terkunci (hash berubah tanpa reload),
+// periksa lagi kuncinya — jangan tunggu reload.
 window.addEventListener('hashchange',()=>{ $('lockErr').style.display='none'; gateInit(); });
 $('unlockBtn').onclick=async()=>{
   if(!await tryUnlock($('keyInput').value)) $('lockErr').style.display='block';
@@ -238,22 +254,12 @@ $('unlockBtn').onclick=async()=>{
 $('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter') $('unlockBtn').click();});
 function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
 function fmtPct(v){return (v>0?'+':'')+v.toFixed(1).replace('.',',')+'%'}
-function renderKiosks(){
- const box=$('kiosks');box.innerHTML='';
+function renderModes(){
+ const box=$('modes');box.innerHTML='';
  MODES.forEach((m,i)=>{
-  const rate=m.tot?(m.win/m.tot*100):0;
-  const b=document.createElement('button');
-  b.className='kiosk'+(m.dead?' dead':'');
-  b.setAttribute('aria-pressed',i===selMode?'true':'false');
-  const lamp=m.dead?'⚫':(m.pct>=0?'🟢':'🔴');
-  const crowd=m.dead?'Tutup — tidak ada pembeli':(rate>=40?'Ramai sekali':rate>=30?'Cukup ramai':'Sepi');
-  b.innerHTML=`<span class="kem">${m.emoji}</span><span class="kbody">
-    <span class="kname">${m.id} • ${m.monster} <span class="lamp">${lamp}</span></span><br>
-    <span class="kprice">💰 Plang: ${m.bal.toFixed(4)} SOL (${fmtPct(m.pct)})</span>
-    <span class="kwin ${rate<33?'low':''}"><i style="width:${rate.toFixed(1)}%"></i></span>
-    <span class="crowd">Menang ${m.win}/${m.tot} (${rate.toFixed(1).replace('.',',')}%) • ${crowd}</span>
-  </span>${m.dead?'<span class="curtain">🚫 TUTUP — SALDO HABIS</span>':''}`;
-  b.onclick=()=>{selMode=i;renderKiosks();renderMode();};
+  const b=document.createElement('button');b.className='modebtn'+(m.dead?' dead':'');b.setAttribute('aria-pressed',i===selMode?'true':'false');
+  b.innerHTML=`<span class="em">${m.emoji}</span><b>${m.id}</b><br>${m.monster}<br>${m.bal.toFixed(4)} SOL`;
+  b.onclick=()=>{selMode=i;renderModes();renderMode();};
   box.appendChild(b);
  });
 }
@@ -271,6 +277,7 @@ function renderMode(){
  $('mStatus').textContent=(m.dead?'● ':'● ')+m.status;
  $('mStatus').style.color=m.dead?'#ff6b6b':'#37c978';
  $('mMonster').textContent=m.monster;
+ $('towerLabel').textContent=`Menara ${m.id} • ${m.monster}`;
  $('detailExtra').style.display='none';$('detailBtn').textContent='LIHAT DETAIL';
 }
 function renderPos(){
@@ -301,9 +308,11 @@ function renderPosDetail(){
   $('pEntry').textContent='—';$('pNow').textContent='—';$('pPeak').textContent='—';$('pSl').textContent='—';
   $('pCap').textContent='—';$('pVal').textContent='—';$('pAge').textContent='—';$('pUpd').textContent='—';
   $('posExtra').textContent='Tidak ada posisi terbuka saat ini.';
+  $('enemyBtn').style.display='none';
   return;
  }
- $('pToken').textContent=p.label.split('— ')[1]||'—';
+ $('enemyBtn').style.display='';
+ $('pToken').textContent='$SA';
  const pc=$('pPct');pc.textContent=fmtPct(p.pct);pc.className=p.pct>=0?'up':'down';
  $('pEntry').textContent='$'+p.entry.toFixed(4);
  $('pNow').textContent='$'+p.now.toFixed(4);
@@ -311,56 +320,44 @@ function renderPosDetail(){
  $('pSl').textContent=p.sl.toFixed(1).replace('.',',')+'%';
  $('pCap').textContent=p.cap;$('pVal').textContent=p.val;$('pAge').textContent=p.age;$('pUpd').textContent=p.upd;
  if(p.tp1){$('posExtra').innerHTML=`TP1 <b class="up">+${((p.tp1/p.entry-1)*100).toFixed(0)}% ($${p.tp1.toFixed(4)})</b> • SL ${p.sl.toFixed(1).replace('.',',')}%${p.url?` • <a href="${p.url}" target="_blank" rel="noopener" style="color:#ffd94d">DexScreener</a>`:''}`;}
- if($('chartWrap').style.display==='block') drawBalanceChart();
+ if($('chartWrap').style.display==='block') drawChart();
 }
-// Chart 1: batang saldo 5 mode vs modal awal 1.0000 SOL (garis kuning).
-function drawBalanceChart(){
- const W=480,H=180,pad=34,bw=56,gap=(W-pad*2-5*bw)/4;
- const mx=1.1, Y=v=>H-24-(v/mx)*(H-48), X=i=>pad+i*(bw+gap);
- let s=`<line x1="${pad}" y1="${Y(1)}" x2="${W-10}" y2="${Y(1)}" stroke="#ffd94d" stroke-dasharray="6 5" stroke-width="2"/><text x="${W-12}" y="${Y(1)-6}" fill="#ffd94d" font-size="11" text-anchor="end">Modal awal 1.0000 SOL</text>`;
- MODES.forEach((m,i)=>{
-  const h=Y(0)-Y(m.bal), col=m.dead?'#ff5a5a':(m.pct>=0?'#37c978':'#ff9a3d');
-  s+=`<rect x="${X(i)}" y="${Y(m.bal)}" width="${bw}" height="${h}" rx="6" fill="${col}"/><text x="${X(i)+bw/2}" y="${Y(m.bal)-6}" fill="#fff" font-size="12" text-anchor="middle">${m.bal.toFixed(4)}</text><text x="${X(i)+bw/2}" y="${H-8}" fill="#b9c0d8" font-size="11" text-anchor="middle">${m.id}</text>`;
- });
+function drawChart(){
+ const p=POS[selPos];
+ const peakPrice=p.entry*(1+p.peak/100), slPrice=p.entry*(1+p.sl/100);
+ const pts=[['Entry',p.entry],['Puncak',peakPrice],['Sekarang',p.now]];
+ const all=[...pts.map(x=>x[1]),slPrice];const mn=Math.min(...all)*0.98,mx=Math.max(...all)*1.02;
+ const X=i=>40+i*190, Y=v=>160-(v-mn)/(mx-mn)*130;
+ let s=`<line x1="40" y1="${Y(slPrice)}" x2="430" y2="${Y(slPrice)}" stroke="#ff6b6b" stroke-dasharray="6 5" stroke-width="2"/><text x="435" y="${Y(slPrice)+4}" fill="#ff6b6b" font-size="12">SL</text>`;
+ s+=`<polyline points="${pts.map((pt,i)=>X(i)+','+Y(pt[1])).join(' ')}" fill="none" stroke="#ffd94d" stroke-width="3"/>`;
+ pts.forEach((pt,i)=>{const last=i===pts.length-1;const tx=last?X(i)+8:X(i)-22;s+=`<circle cx="${X(i)}" cy="${Y(pt[1])}" r="6" fill="#37c978"/><text x="${tx}" y="${Y(pt[1])-12}" fill="#fff" font-size="13" text-anchor="${last?'end':'start'}">${pt[0]} $${pt[1].toFixed(4)}</text>`;});
+ s+=`<text x="40" y="175" fill="#b9c0d8" font-size="11">Harga $ — ${p.label}</text>`;
  $('chart').innerHTML=s;
- $('chartNote').textContent='Batang = saldo tiap mode dibanding modal awal 1.0000 SOL (garis kuning). Ini data nyata dari file bot, bukan prediksi.';
- $('chartBtn').textContent='TUTUP CHART SALDO 5 MODE';
-}
-// Chart 2: garis beli → jual satu trade (2 titik nyata dari file bot).
-function drawTradeChart(t){
- const W=480,H=180;
- const all=[t.entry,t.exit], mn=Math.min(...all)*0.98, mx=Math.max(...all)*1.02;
- const X=i=>60+i*340, Y=v=>150-(v-mn)/(mx-mn)*110;
- const col=t.pct>=0?'#37c978':'#ff5a5a';
- let s=`<polyline points="${X(0)},${Y(t.entry)} ${X(1)},${Y(t.exit)}" fill="none" stroke="${col}" stroke-width="3"/>`;
- s+=`<circle cx="${X(0)}" cy="${Y(t.entry)}" r="6" fill="#ffd94d"/><text x="${X(0)}" y="${Y(t.entry)-12}" fill="#fff" font-size="13">Beli $${t.entry.toFixed(4)}</text>`;
- s+=`<circle cx="${X(1)}" cy="${Y(t.exit)}" r="6" fill="${col}"/><text x="${X(1)}" y="${Y(t.exit)-12}" fill="#fff" font-size="13" text-anchor="end">Jual $${t.exit.toFixed(4)}</text>`;
- s+=`<text x="60" y="172" fill="#b9c0d8" font-size="11">$${t.sym} • ${t.mode} • ${t.res} • ${t.closed} • ${t.pct>=0?'+':''}${t.pct.toFixed(2)}% (${t.pnl>=0?'+':''}${t.pnl.toFixed(4)} SOL)</text>`;
- $('chart').innerHTML=s;
- $('chartNote').textContent='Garis beli → jual koin ini. Hanya 2 titik nyata dari file bot (entry dan exit), bukan riwayat harga lengkap.';
- $('chartBtn').textContent='TUTUP CHART TRADE';
 }
 $('detailBtn').onclick=()=>{
  const m=MODES[selMode];const ex=$('detailExtra');
  if(ex.style.display==='block'){ex.style.display='none';$('detailBtn').textContent='LIHAT DETAIL';return;}
  const rate=(m.tot?(m.win/m.tot*100):0).toFixed(1).replace('.',',');
- ex.innerHTML=`Win rate <b>${rate}%</b> (${m.win} menang dari ${m.tot} trade). Saldo awal 1.0000 SOL, sekarang <b>${m.bal.toFixed(4)} SOL</b> (${fmtPct(m.pct)}). ${m.dead?'Kios ini TUTUP karena saldo habis — tirai diturunkan dan tidak bisa dipilih lagi sampai saldo di-reset.':'Kios ini masih buka.'}`;
+ ex.innerHTML=`Win rate <b>${rate}%</b> (${m.win} menang dari ${m.tot} trade). Saldo awal 1.0000 SOL, sekarang <b>${m.bal.toFixed(4)} SOL</b> (${fmtPct(m.pct)}). ${m.dead?'Mode ini berhenti karena saldo habis — menara runtuh dan tidak bisa diaktifkan lagi sampai saldo di-reset.':'Mode ini masih aktif.'}`;
  ex.style.display='block';$('detailBtn').textContent='TUTUP DETAIL';
 };
 $('chartBtn').onclick=()=>{
+ if(!POS.length){toast('Tidak ada posisi terbuka untuk digambar');return;}
  const w=$('chartWrap');const open=w.style.display==='block';
- w.style.display=open?'none':'block';
- if(open){$('chartBtn').textContent='LIHAT CHART SALDO 5 MODE';return;}
- drawBalanceChart();
+ w.style.display=open?'none':'block';$('chartBtn').textContent=open?'LIHAT CHART':'TUTUP CHART';
+ if(!open) drawChart();
 };
+$('towerBtn').onclick=()=>{selMode=(selMode+1)%MODES.length;renderModes();renderMode();toast('Menara: '+MODES[selMode].id+' • '+MODES[selMode].monster);};
+$('enemyBtn').onclick=()=>{selPos=0;renderPos();renderPosDetail();document.querySelector('.panel:nth-of-type(2)')?.scrollIntoView({behavior:'smooth',block:'center'});toast('Musuh $SA — posisi EXCLUSIVE, +2.2%');};
+let notifOn=localStorage.getItem('solbotNotif')==='1';
 function renderWin(){
  const box=$('winList');box.innerHTML='';
  MODES.forEach((m,i)=>{
   const rate=m.tot?(m.win/m.tot*100):0;
   const row=document.createElement('div');
   row.style.cssText='margin:6px 0;cursor:pointer';
-  row.innerHTML=`<div style="display:flex;justify-content:space-between"><span>${m.emoji} ${m.id} — ${m.monster}</span><b style="color:${rate>=33?'#37c978':'#ff6b6b'}">${rate.toFixed(1).replace('.',',')}% (${m.win}/${m.tot})</b></div><div style="background:#171226;border-radius:6px;height:10px;margin-top:3px"><div style="width:${rate.toFixed(1)}%;background:${rate>=33?'#37c978':'#ff6b6b'};height:10px;border-radius:6px"></div></div>`;
-  row.onclick=()=>{selMode=i;renderKiosks();renderMode();document.querySelector('.street').scrollIntoView({behavior:'smooth'});};
+  row.innerHTML=`<div style="display:flex;justify-content:space-between"><span>${m.emoji} ${m.id} — ${m.monster}</span><b style="color:${rate>=33?'#37c978':'#ff6b6b'}">${rate.toFixed(1).replace('.',',')}% (${m.win}/${m.tot})</b></div><div style="background:#232a3d;border-radius:6px;height:10px;margin-top:3px"><div style="width:${rate.toFixed(1)}%;background:${rate>=33?'#37c978':'#ff6b6b'};height:10px;border-radius:6px"></div></div>`;
+  row.onclick=()=>{selMode=i;renderModes();renderMode();document.querySelector('.panel').scrollIntoView({behavior:'smooth'});};
   box.appendChild(row);
  });
 }
@@ -369,13 +366,11 @@ function renderTrades(){
  TRADES.forEach(t=>{
   const win=t.pct>=0;
   const row=document.createElement('div');
-  row.style.cssText='border-bottom:1px solid #2a2145;padding:6px 0;cursor:pointer';
+  row.style.cssText='border-bottom:1px solid #232a3d;padding:6px 0';
   row.innerHTML=`<div style="display:flex;justify-content:space-between"><b>$${t.sym}</b><span style="color:#b9c0d8;font-size:12px">${t.mode} • ${t.res} • ${t.closed}</span></div><div style="display:flex;justify-content:space-between"><span style="color:#b9c0d8">Beli $${t.entry.toFixed(4)} → Jual $${t.exit.toFixed(4)}</span><b style="color:${win?'#37c978':'#ff6b6b'}">${win?'+':''}${t.pct.toFixed(2).replace('.',',')}% (${win?'+':''}${t.pnl.toFixed(4)} SOL)</b></div>`;
-  row.onclick=()=>{drawTradeChart(t);$('chartWrap').style.display='block';document.querySelector('#chartWrap').scrollIntoView({behavior:'smooth',block:'center'});};
   box.appendChild(row);
  });
 }
-let notifOn=localStorage.getItem('solbotNotif')==='1';
 function renderNotif(){
  const b=$('notifBtn');b.classList.toggle('on',notifOn);
  b.textContent=notifOn?'🔔 Notifikasi AKTIF — ketuk untuk mematikan':'🔔 Aktifkan notifikasi di HP ini';
@@ -403,12 +398,10 @@ const KIND_EMOJI={sinyal:'📡',beli:'🟢',jual:'🔴',sl:'🔴',info:'ℹ️'}
 async function fetchLive(){
   if(!viewKey) return;
   try{
-    let data=null, fromFile=false;
-    try{const r=await fetch('/api/status?k='+encodeURIComponent(viewKey));if(r.ok) data=await r.json();}catch(e){}
-    if(!data||!data.modes||!Object.keys(data.modes).length){
-      try{const r2=await fetch('data.json');if(r2.ok){data=await r2.json();fromFile=true;}}catch(e){}
-    }
-    if(!data||!data.modes||!Object.keys(data.modes).length) return;
+    const r=await fetch('/api/status?k='+encodeURIComponent(viewKey));
+    if(!r.ok) return;
+    const data=await r.json();
+    if(!data.modes || !Object.keys(data.modes).length) return;
     let total=0,tw=0,tt=0,tp=0;
     const livePos=[];
     MODES.forEach(m=>{
@@ -436,10 +429,9 @@ async function fetchLive(){
     document.querySelector('.stats').children[1].querySelector('b').textContent=tw+' / '+tt;
     document.querySelector('.stats').children[2].querySelector('b').textContent=String(tp);
     if(livePos.length){POS.length=0;livePos.forEach(p=>POS.push(p));selPos=0;}
-    $('liveBadge').textContent=fromFile?('• ● DATA BOT '+(data.updated||'')):('• ● LIVE '+fmtWIB(Math.floor(Date.now()/1000)));
+    $('liveBadge').textContent='• ● LIVE '+fmtWIB(Math.floor(Date.now()/1000));
     $('liveBadge').style.color='#7ee787';
-    renderKiosks();renderMode();renderPos();renderPosDetail();renderWin();
-    if(data.trades&&data.trades.length){TRADES.length=0;data.trades.forEach(t=>TRADES.push(t));renderTrades();}
+    renderModes();renderMode();renderPos();renderPosDetail();renderWin();
     const er=await fetch('/api/events?k='+encodeURIComponent(viewKey));
     if(er.ok){
       const ev=await er.json();
@@ -452,7 +444,7 @@ async function fetchLive(){
 }
 $('animChk').onchange=e=>setPaused(!e.target.checked);
 $('notifChk').onchange=e=>{notifOn=e.target.checked;localStorage.setItem('solbotNotif',notifOn?'1':'0');renderNotif();};
-renderKiosks();renderMode();renderPos();renderPosDetail();renderNotif();renderWin();renderTrades();
+renderModes();renderMode();renderPos();renderPosDetail();renderNotif();renderWin();renderTrades();
 fetchLive();setInterval(fetchLive,60000);
 </script>
 </body>

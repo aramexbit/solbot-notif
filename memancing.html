@@ -262,8 +262,8 @@ function spawnFish(f,i){
   const el=document.createElement('div');
   el.className='fish'+(Math.random()<0.4?' flip':'');
   el.dataset.sym=f.sym;
-  const lane=(typeof i==='number'?i:FISH.indexOf(f))%11;
-  el.style.top=(42+lane*4.2+Math.random()*2).toFixed(1)+'%';
+  const lane=(typeof i==='number'?i:FISH.indexOf(f))%5;
+  el.style.top=(44+lane*10+Math.random()*2).toFixed(1)+'%';
   el.style.animationDuration=(20+Math.random()*20).toFixed(1)+'s';
   el.style.animationDelay=(-Math.random()*30).toFixed(1)+'s';
   el.innerHTML=`<span class="tag"><i style="background:${dotColor(f)}"></i>${f.sym}</span>

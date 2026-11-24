@@ -1,451 +1,264 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SolBot Notif • Uji 5 Mode — Tower Defense</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0b1020;color:#f5eeda;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
-.wrap{max-width:520px;margin:0 auto;padding:10px 10px 28px}
-header{display:flex;align-items:center;gap:8px;background:#141a2e;border:2px solid #c9a227;border-radius:14px;padding:10px 12px}
-header h1{font-size:17px;flex:1;line-height:1.2}
-header h1 small{display:block;font-size:12px;color:#7ee787;font-weight:600}
-.iconbtn{background:#222b45;border:1px solid #c9a227;color:#fff;border-radius:10px;width:38px;height:38px;font-size:18px;cursor:pointer}
-.stats{display:flex;gap:8px;margin:10px 0}
-.stat{flex:1;background:#1a2138;border:1px solid #3a4668;border-radius:10px;padding:8px;text-align:center}
-.stat b{display:block;font-size:15px}
-.stat span{font-size:11px;color:#b9c0d8}
-/* scene */
-.scene{position:relative;height:260px;border:2px solid #c9a227;border-radius:14px;overflow:hidden;background:linear-gradient(#0e1a3a 0%,#1d3a2a 55%,#2a2118 100%)}
-.moon{position:absolute;top:14px;right:18px;font-size:34px}
-.house{position:absolute;font-size:44px;opacity:.95}
-.path{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(#6b4f2a,#4a3520);clip-path:polygon(38% 0,62% 0,100% 100%,0 100%)}
-.tower{position:absolute;left:50%;top:62px;transform:translateX(-50%);text-align:center;cursor:pointer;background:none;border:0;color:#fff}
-.tower .t{font-size:64px;filter:drop-shadow(0 4px 6px #000)}
-.tower .ring{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:110px;height:22px;border:2px dashed #ffd94d;border-radius:50%}
-.tower small{display:block;background:#000a;padding:3px 8px;border-radius:8px;font-size:12px}
-.enemy{position:absolute;bottom:18px;left:8%;font-size:44px;cursor:pointer;animation:walk 9s linear infinite;z-index:2;background:none;border:0}
-.enemy .tag{position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#7a1010;color:#fff;font-size:12px;padding:2px 7px;border-radius:8px}
-.enemy .dmg{position:absolute;top:-48px;right:-8px;color:#ff5a5a;font-weight:800;font-size:20px;animation:dmg 2s ease-out infinite}
-@keyframes walk{0%{left:6%}50%{left:46%}100%{left:86%}}
-@keyframes dmg{0%{opacity:0;transform:translateY(6px)}30%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
-body.paused .enemy,body.paused .enemy .dmg{animation-play-state:paused}
-.scene .hint{position:absolute;left:10px;bottom:8px;font-size:11px;background:#000a;padding:4px 8px;border-radius:8px;color:#ffe9a8}
-/* mode picker */
-h2{font-size:14px;margin:14px 2px 6px;color:#ffd94d}
-.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px}
-.modebtn{background:#1a2138;border:2px solid #3a4668;border-radius:10px;padding:8px 4px;color:#fff;cursor:pointer;font-size:12px;line-height:1.3}
-.modebtn .em{font-size:24px;display:block}
-.modebtn[aria-pressed="true"]{border-color:#ffd94d;background:#2a2410;box-shadow:0 0 0 2px #ffd94d55}
-.modebtn.dead{opacity:.75;border-color:#7a1010}
-.modebtn.dead .em{filter:grayscale(1)}
-/* panels */
-.panel{background:#141a2e;border:2px solid #c9a227;border-radius:14px;padding:14px;margin-top:10px}
-.panel h3{font-size:16px;margin-bottom:8px}
-.hp{height:14px;background:#222;border-radius:8px;overflow:hidden;margin:8px 0}
-.hp i{display:block;height:100%;background:linear-gradient(90deg,#37c978,#a8e063)}
-.hp.low i{background:linear-gradient(90deg,#ff5a5a,#ff9a3d)}
-.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:14px}
-.kv div{background:#1e2742;border-radius:8px;padding:8px}
-.kv span{display:block;font-size:11px;color:#b9c0d8}
-.up{color:#37c978;font-weight:700}.down{color:#ff6b6b;font-weight:700}
-.btn{display:block;width:100%;margin-top:10px;background:linear-gradient(#ffe082,#c9a227);border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:800;cursor:pointer;color:#221a00}
-.btn.ghost{background:#222b45;color:#fff;border:1px solid #c9a227}
-.poslist{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
-.posbtn{text-align:left;background:#1e2742;border:2px solid #3a4668;color:#fff;border-radius:10px;padding:10px;cursor:pointer;font-size:14px}
-.posbtn[aria-pressed="true"]{border-color:#ffd94d}
-.posbtn:disabled{opacity:.55;cursor:not-allowed}
-#chart{width:100%;height:180px;background:#0d1326;border:1px solid #3a4668;border-radius:10px;margin-top:10px}
-#chartWrap{display:none}
-#notifBtn{background:linear-gradient(#ffe082,#c9a227);color:#221a00}
-#notifBtn.on{background:linear-gradient(#37c978,#1d7a44);color:#fff}
-#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111827;border:1px solid #ffd94d;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:9;max-width:90vw;text-align:center}
-#lock{position:fixed;inset:0;background:#0b1020;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
-#lock .lockcard{background:#141a2e;border:2px solid #c9a227;border-radius:14px;padding:24px 20px;max-width:380px;width:100%;text-align:center}
-#lock .lockcard h2{margin:10px 0 6px;color:#ffd94d}
-#lock .lockcard p{font-size:14px;color:#b9c0d8;line-height:1.5;margin-bottom:12px}
-#keyInput{width:100%;padding:12px;border:2px solid #3a4668;border-radius:10px;background:#0d1326;color:#fff;font-size:15px;margin-bottom:10px;text-align:center}
-.note{font-size:12px;color:#b9c0d8;margin-top:12px;line-height:1.5}
-dialog{border:2px solid #c9a227;border-radius:14px;background:#141a2e;color:#fff;padding:16px;max-width:480px;width:92vw}
-dialog h3{margin-bottom:8px}
-dialog label{display:block;font-size:13px;margin:10px 0}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#062c56"><title>SolBot Fishing Live — 3D Anime</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+:root{font-family:Nunito,system-ui,sans-serif;color:#f4fbff;background:#041d3a;font-synthesis:none}*{box-sizing:border-box}html,body,#app{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}#app{position:relative;min-height:0;background:linear-gradient(#1684d8,#053a70 55%,#031c39)}#scene-wrap{position:absolute;inset:0;touch-action:none}#world{width:100%;height:100%;display:block;touch-action:none}.glass{background:linear-gradient(145deg,rgba(5,35,75,.88),rgba(3,23,52,.76));border:1px solid rgba(96,194,255,.62);box-shadow:0 8px 28px #00172b88,inset 0 1px #b8eaff35;backdrop-filter:blur(12px);border-radius:17px}.topbar{position:absolute;top:max(12px,env(safe-area-inset-top));left:max(16px,env(safe-area-inset-left));right:max(16px,env(safe-area-inset-right));display:flex;gap:12px;align-items:stretch;z-index:5}.brand{display:flex;align-items:center;gap:8px;min-width:240px;text-shadow:0 3px 8px #001b45}.brand-fish{font-size:44px;filter:drop-shadow(0 4px 3px #003)}.brand strong{display:block;font-size:clamp(21px,2.1vw,32px);font-weight:900;line-height:1;color:white}.brand em{font-style:normal;color:#ffbd38}.brand small{font-size:10px;letter-spacing:2px;font-weight:900}.metric{min-width:130px;flex:1;padding:9px 13px;border:1px solid #56bfff9c;border-radius:14px;background:linear-gradient(130deg,#07519acb,#031d49e8);box-shadow:0 5px 18px #001b4d80}.metric span,.metric small{display:block;color:#b6dcff;font-size:10px;font-weight:800;letter-spacing:.8px}.metric b{display:block;font-size:clamp(16px,1.55vw,23px);line-height:1.25}.positive{color:#50ffae}.live-pill{min-width:115px;border-radius:14px;background:#003d3acc;border:1px solid #27f6a0;padding:9px 12px;display:grid;grid-template-columns:14px 1fr;align-content:center;column-gap:7px}.live-pill i{width:12px;height:12px;border-radius:50%;background:#ffc04d;grid-row:span 2;align-self:center;box-shadow:0 0 12px currentColor}.live-pill b{font-size:13px;color:#9dffce}.live-pill small{font-size:9px;color:#b8e9d2}.live-pill.online i{background:#37ff9c}.icon-btn{width:44px;border:1px solid #7bcaff88;border-radius:13px;background:#063b71d9;color:white;font-size:22px}.event-panel,.scanner-panel,.position-panel{position:absolute;z-index:4;padding:13px 15px}.event-panel{right:16px;top:112px;width:230px;max-height:37vh;overflow:hidden}.scanner-panel{left:16px;top:112px;width:245px;max-height:44vh;overflow:hidden}.position-panel{right:16px;bottom:205px;width:230px;max-height:24vh;overflow:auto}.glass h2{font-size:13px;letter-spacing:.7px;margin:0 0 10px;font-weight:900}.subhead{font-size:9px;letter-spacing:1px;color:#8ccfff;font-weight:900;margin:9px 0 5px}.watch-head{border-top:1px solid #6cbfff33;padding-top:8px}.token-list,.event-list,.position-list{display:grid;gap:6px;overflow:auto;max-height:190px}.token,.event,.position{padding:7px 8px;border-radius:9px;background:#0b4b7b70;border:1px solid #79caff26;font-size:10px}.token{display:flex;justify-content:space-between;gap:6px}.token b{font-size:11px}.token small,.event small,.position small{display:block;color:#a8d8f7;font-size:9px}.token .tag{color:#ffcf5a;font-weight:900}.event{display:grid;grid-template-columns:24px 1fr;gap:5px}.event .ico{font-size:17px}.event strong{font-size:10px}.event.buy strong{color:#ffc64b}.event.sell strong{color:#4dffad}.event.sl strong{color:#ff7777}.empty,.muted{font-size:10px;color:#a8cde9;padding:8px}.position b{color:#ffdf82}.position .pnl{float:right;color:#56ffb0}.bottom-grid{position:absolute;z-index:4;left:max(16px,env(safe-area-inset-left));right:260px;bottom:max(14px,env(safe-area-inset-bottom));display:grid;grid-template-columns:minmax(0,1.6fr) minmax(190px,.8fr);gap:12px}.history-panel,.status-panel{padding:12px 14px;min-height:150px}.history-panel h2,.status-panel h2{margin-bottom:7px}.table-wrap{overflow:auto;max-height:118px}table{border-collapse:collapse;width:100%;font-size:10px;text-align:left}th{color:#9bd4ff;font-size:9px;letter-spacing:.7px}td,th{padding:5px 7px;border-bottom:1px solid #a4dfff22}td:nth-child(3){font-weight:900}.buy-text{color:#ff7777}.sell-text{color:#52ffac}.status-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #a4dfff20;font-size:10px}.status-row span{color:#a9d8f8}.status-row b{color:#fff}.tiny-note{font-size:8px;color:#a4c9e4;margin-top:8px}.toast{position:absolute;z-index:8;top:95px;left:50%;transform:translateX(-50%);background:#053e68ed;border:1px solid #77d2ff;padding:9px 16px;border-radius:30px;font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none}.toast.show{opacity:1}#app.ui-hidden .event-panel,#app.ui-hidden .scanner-panel,#app.ui-hidden .position-panel,#app.ui-hidden .bottom-grid{display:none}#app.ui-hidden .topbar .metric,#app.ui-hidden .topbar .live-pill{display:none}@media(max-width:900px){.topbar{gap:6px}.brand{min-width:145px}.brand-fish{font-size:28px}.brand strong{font-size:19px}.metric{min-width:90px;padding:7px}.metric span,.metric small{font-size:8px}.event-panel{width:190px;right:8px;top:100px}.scanner-panel{left:8px;top:100px;width:195px}.position-panel{right:8px;width:190px;bottom:190px}.bottom-grid{left:8px;right:8px;bottom:8px;grid-template-columns:1fr 170px}.history-panel,.status-panel{padding:9px}.glass h2{font-size:11px}}@media(max-width:620px){.topbar{left:7px;right:7px;top:max(7px,env(safe-area-inset-top));flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.topbar::-webkit-scrollbar{display:none}.brand{min-width:140px;height:46px}.metric{flex:0 0 auto;min-width:96px}.metric:nth-of-type(4){display:none}.live-pill{min-width:95px;flex:0 0 auto}.icon-btn{height:40px;flex:0 0 auto}.scanner-panel{top:106px;left:7px;width:155px;padding:9px}.event-panel{top:106px;right:7px;width:158px;padding:9px}.position-panel{display:none}.bottom-grid{grid-template-columns:1fr;bottom:max(7px,env(safe-area-inset-bottom))}.status-panel{display:none}.history-panel{min-height:115px}.table-wrap{max-height:75px}.glass h2{font-size:10px}.token,.event{padding:5px;font-size:9px}}
+
+
+#boot-status{position:absolute;z-index:20;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 32px));padding:18px 20px;border:1px solid #8bd8ff;border-radius:16px;background:rgba(3,28,57,.94);box-shadow:0 12px 40px #00152c99;color:#f4fbff;text-align:center;font:600 14px Nunito,system-ui,sans-serif}
+#boot-status b{display:block;font-size:17px;margin-bottom:7px}#boot-status small{display:block;color:#b8dcf5;line-height:1.5}#boot-status.error{border-color:#ff9c83}#boot-status[hidden]{display:none}
 </style>
+  <script>
+// Data live dibaca dari memancing-data.json (sumber yang sama dengan situs
+// Mancing 2D) — dipoll tiap 30 detik, jadi halaman ini jalan tanpa bridge.
+// WebSocket opsional: isi wsUrl dengan URL WSS bridge Python bila ada;
+// bila kosong, halaman tetap live dari file data.
+window.SOLBOT_CONFIG = {
+  wsUrl: "",
+  reconnectMs: 2500,
+  demoWhenOffline: true
+};
+
+</script>
+  <script>
+    (() => {
+      const show = (title, detail) => {
+        const el = document.getElementById('boot-status');
+        if (!el) return;
+        el.hidden = false; el.classList.add('error');
+        el.innerHTML = '<b></b><small></small>';
+        el.querySelector('b').textContent = title;
+        el.querySelector('small').textContent = detail;
+      };
+      window.__solbotShowError = show;
+      window.addEventListener('error', (e) => {
+        show('Kesalahan JavaScript 3D', (e.message || 'Unknown error') + (e.filename ? ' · ' + e.filename.split('/').pop() + ':' + e.lineno : ''));
+        console.error('SolBot runtime error:', e.error || e.message, e.error?.stack || '');
+      });
+      window.addEventListener('unhandledrejection', (e) => {
+        show('Three.js gagal dijalankan', String(e.reason?.stack || e.reason || 'Kesalahan module/CDN.'));
+        console.error('SolBot promise error:', e.reason);
+      });
+      setTimeout(() => {
+        if (!window.__solbot3dStarted) show('3D belum berhasil dimuat', 'Periksa koneksi internet — Three.js dimuat dari CDN. Coba muat ulang halaman.');
+      }, 9000);
+    })();
+  </script>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js"}}</script>
 </head>
 <body>
-<div id="lock">
-  <div class="lockcard">
-    <div style="font-size:44px">🔐</div>
-    <h2>SolBot Notif</h2>
-    <p>Halaman ini terkunci. Masukkan kunci tampilan untuk membuka, atau buka lewat link yang sudah berisi kunci di ujungnya.</p>
-    <input id="keyInput" type="text" placeholder="Kunci tampilan" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <button class="btn" id="unlockBtn">BUKA</button>
-    <p id="lockErr" style="display:none;color:#ff6b6b;margin:10px 0 0">Kunci salah, coba lagi.</p>
-  </div>
-</div>
-<div class="wrap">
-<header>
-  <span aria-hidden="true">🔔</span>
-  <h1>SolBot Notif • Uji 5 Mode<small>● CMD online • saldo DEMO • data file bot 18 Nov 00:47 WIB</small></h1>
-  <button class="iconbtn" id="pauseBtn" title="Jeda / lanjutkan animasi" aria-label="Jeda animasi">⏸</button>
-  <button class="iconbtn" id="gearBtn" title="Pengaturan" aria-label="Pengaturan">⚙️</button>
-</header>
+  <main id="app">
+    <div id="boot-status"><b>SolBot Fishing 3D</b><small>Memuat Three.js dan dunia laut 3D… Pastikan internet aktif.</small></div>
+    <div id="scene-wrap"><canvas id="world"></canvas></div>
+    <header class="topbar">
+      <div class="brand"><div class="brand-fish">🐟</div><div><strong>SolBot <em>Fishing</em></strong><small>TRADE • CATCH • PROFIT</small></div></div>
+      <div class="metric"><span>DEMO BALANCE</span><b id="balance">— SOL</b><small id="balanceUsd">Awaiting bot data</small></div>
+      <div class="metric"><span>OPEN POSITIONS</span><b id="openCount">0</b><small>Active catches</small></div>
+      <div class="metric"><span>WIN / LOSS</span><b class="positive" id="pnl">+0.00 SOL</b><small id="tradeCount">0 trades</small></div>
+      <div class="live-pill" id="livePill"><i></i><b>CONNECTING</b><small>memancing-data.json</small></div>
+      <button class="icon-btn" id="soundBtn" title="Toggle sound">♫</button><button class="icon-btn" id="fsBtn" title="Fullscreen (sembunyikan panel)">⛶</button>
+    </header>
 
-<div class="stats">
-  <div class="stat"><b>3.3373 SOL</b><span>Total 5 mode</span></div>
-  <div class="stat"><b>102 / 309</b><span>Menang / total trade</span></div>
-  <div class="stat"><b>0</b><span>Posisi terbuka</span></div>
-</div>
+    <aside class="event-panel glass"><h2>⚡ EVENT FEED</h2><div id="events" class="event-list"><div class="event muted">Waiting for bot events…</div></div></aside>
+    <aside class="scanner-panel glass"><h2>⌕ TOKEN SCANNER <span class="scan-dot"></span></h2><div class="subhead">TOKEN YANG SEDANG DICARI</div><div id="scanning" class="token-list"><div class="empty">Menunggu hasil scanner…</div></div><div class="subhead watch-head">WATCHLIST</div><div id="watch" class="token-list"><div class="empty">Belum ada token watchlist</div></div></aside>
+    <section class="position-panel glass"><h2>🎣 ACTIVE CATCHES</h2><div id="positions" class="position-list"><div class="empty">Belum ada posisi aktif</div></div></section>
+    <section class="bottom-grid">
+      <div class="glass history-panel"><h2>◷ TRADE HISTORY</h2><div class="table-wrap"><table><thead><tr><th>TIME</th><th>TOKEN</th><th>ACTION</th><th>PRICE / PNL</th></tr></thead><tbody id="history"><tr><td colspan="4" class="empty">Belum ada transaksi</td></tr></tbody></table></div></div>
+      <div class="glass status-panel"><h2>🌊 OCEAN STATUS</h2><div class="status-row"><span>Bot mode</span><b id="mode">—</b></div><div class="status-row"><span>Scanner candidates</span><b id="scanCount">0</b></div><div class="status-row"><span>Watchlist</span><b id="watchCount">0</b></div><div class="status-row"><span>Last update</span><b id="updated">Waiting…</b></div><div class="status-row"><span>Connection</span><b id="connectionText">Connecting</b></div><div class="tiny-note">Visualisasi mengikuti data bot. Bukan sinyal atau perintah trading.</div></div>
+    </section>
+    <div class="toast" id="toast"></div>
+  </main>
+  <script type="module">
+import * as THREE from 'three';
 
-<div class="scene" id="scene">
-  <div class="moon">🌙</div>
-  <div class="house" style="left:8px;top:88px">🏠</div>
-  <div class="house" style="right:10px;top:70px">🕌</div>
-  <div class="house" style="left:22px;top:150px;font-size:34px">🏠</div>
-  <div class="path"></div>
-  <button class="tower" id="towerBtn" title="Ketuk menara: pilih mode">
-    <span class="t">🗼</span><span class="ring"></span>
-    <small id="towerLabel">Menara EASY • Tuyul</small>
-  </button>
-  <button class="enemy" id="enemyBtn" title="Ketuk musuh: lihat posisi $SA">
-    <span class="tag">$SA +2.2%</span><span class="dmg">+22</span>🧌
-  </button>
-  <div class="hint">Ketuk menara = ganti mode &nbsp;•&nbsp; Ketuk musuh = posisi terbuka</div>
-</div>
+const $ = (id) => document.getElementById(id);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x77c8f5);
+scene.fog = new THREE.FogExp2(0x4aa8d8, 0.008);
+const camera = new THREE.PerspectiveCamera(43, innerWidth / innerHeight, 0.1, 180);
+camera.position.set(0, 7.6, 17.5); camera.lookAt(0, 1.45, 0);
+const renderer = new THREE.WebGLRenderer({ canvas: $('world'), antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7)); renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18;
+scene.add(new THREE.HemisphereLight(0xc9f2ff, 0x123c60, 2.1));
+const sun = new THREE.DirectionalLight(0xffefcf, 3.2); sun.position.set(-7, 13, 7); sun.castShadow = true; sun.shadow.mapSize.set(1024,1024); scene.add(sun);
+const fill = new THREE.PointLight(0x36bfff, 18, 35); fill.position.set(2,4,-4); scene.add(fill);
 
-<h2>⚔️ Pilih mode — ketuk untuk lihat detail</h2>
-<div class="modes" id="modes" role="group" aria-label="Pilih mode"></div>
+const mat = (color, roughness=.72, metalness=0) => new THREE.MeshStandardMaterial({color,roughness,metalness});
+const sphere = new THREE.SphereGeometry(1,20,14);
+function mesh(geo, material, parent, pos=[0,0,0], scale=[1,1,1]) { const o=new THREE.Mesh(geo,material); o.position.set(...pos); o.scale.set(...scale); o.castShadow=true; o.receiveShadow=true; parent.add(o); return o; }
+function box(parent, color, pos, scale, rot=[0,0,0]) { const o=mesh(new THREE.BoxGeometry(1,1,1),mat(color),parent,pos,scale); o.rotation.set(...rot); return o; }
 
-<section class="panel" id="modePanel" aria-live="polite">
-  <h3 id="modeTitle">EASY • Tuyul</h3>
-  <div class="hp" id="modeHpWrap"><i id="modeHp" style="width:100%"></i></div>
-  <div style="font-size:13px" id="modeHpText">Saldo 1.0690 / 1.0000 SOL</div>
-  <div class="kv" style="margin-top:10px">
-    <div><span>Saldo</span><b id="mBalance">1.0690 SOL</b></div>
-    <div><span>Perubahan</span><b id="mPct" class="up">+6.9%</b></div>
-    <div><span>Menang</span><b id="mWin">12 / 27</b></div>
-    <div><span>Posisi</span><b id="mPos">0 posisi</b></div>
-    <div><span>Status</span><b id="mStatus">● AKTIF</b></div>
-    <div><span>Monster</span><b id="mMonster">Tuyul</b></div>
-  </div>
-  <button class="btn" id="detailBtn">LIHAT DETAIL</button>
-  <div id="detailExtra" style="display:none;font-size:14px;line-height:1.6;margin-top:10px"></div>
-</section>
+// Sky dome and distant island scenery.
+mesh(new THREE.SphereGeometry(95,32,20), new THREE.MeshBasicMaterial({color:0x72c8f4,side:THREE.BackSide}), scene,[0,0,0]);
+const island = new THREE.Group(); scene.add(island);
+mesh(new THREE.ConeGeometry(4.2,3.2,7),mat(0x497e50),island,[-6,1.2,-13],[1.8,1,1]);
+mesh(new THREE.ConeGeometry(2.7,2.4,7),mat(0x5c985b),island,[-8,1.0,-11],[1.2,1,1]);
+// lighthouse
+const tower=mesh(new THREE.CylinderGeometry(.34,.56,3.7,12),mat(0xf3eee0),scene,[-7.7,2.5,-12]);
+mesh(new THREE.CylinderGeometry(.4,.4,.42,12),mat(0xd84e3c),scene,[-7.7,3.55,-12]);
+mesh(new THREE.ConeGeometry(.58,.55,12),mat(0x293f60),scene,[-7.7,4.0,-12]);
+mesh(new THREE.BoxGeometry(.75,.45,.75),mat(0xffdf82,.25),scene,[-7.7,4.12,-12]);
+// soft clouds
+for(let i=0;i<14;i++){const g=new THREE.Group();scene.add(g);const x=-12+Math.random()*24,y=7+Math.random()*3,z=-20-Math.random()*10;for(let j=0;j<4;j++)mesh(sphere,mat(0xffffff),g,[(j-1.5)*.65,Math.random()*.22,0],[.8+Math.random()*.4,.36+Math.random()*.25,.48]);g.position.set(x,y,z);}
 
-<section class="panel">
-  <h3>📊 Posisi terbuka (0)</h3>
-  <div class="poslist" id="posList"></div>
-  <div class="kv">
-    <div><span>Token</span><b id="pToken">—</b></div>
-    <div><span>Perubahan</span><b id="pPct">—</b></div>
-    <div><span>Entry</span><b id="pEntry">—</b></div>
-    <div><span>Sekarang</span><b id="pNow">—</b></div>
-    <div><span>Puncak</span><b id="pPeak">—</b></div>
-    <div><span>SL</span><b id="pSl">—</b></div>
-    <div><span>Modal</span><b id="pCap">—</b></div>
-    <div><span>Nilai</span><b id="pVal">—</b></div>
-    <div><span>Umur</span><b id="pAge">—</b></div>
-    <div><span>Update harga</span><b id="pUpd">—</b></div>
-  </div>
-  <div id="posExtra" style="font-size:13px;line-height:1.5;margin-top:8px">Tidak ada posisi terbuka saat ini.</div>
-  <h3 style="margin-top:14px">🪦 Baru ditutup — $SA (dari file bot)</h3>
-  <div class="poslist" id="closedList"></div>
-  <div style="font-size:12px;color:#b9c0d8;line-height:1.5">Posisi $SA (EXCLUSIVE) sudah dihapus dari tampilan atas permintaan pengguna — itu posisi lama. Dua posisi $SA lain (EASY dan MEDIUM) sudah ditutup bot pada 05 Nov 14:06 karena kena SL.</div>
-  <h3 style="margin-top:14px">🏆 Presentasi kemenangan — win rate per mode</h3>
-  <div id="winList" style="font-size:13px;line-height:1.6"></div>
-  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Total: menang <b style="color:#fff">102 dari 309</b> trade (33.0%). Ketuk bar mode untuk memilih mode itu. EASY paling tinggi (44.4%), MEDIUM paling rendah (18.2%).</div>
-  <h3 style="margin-top:14px">🪙 Koin dibeli &amp; dijual — 12 terbaru dari 309</h3>
-  <div id="tradeList" style="font-size:13px;line-height:1.7"></div>
-  <div style="font-size:12px;color:#b9c0d8;line-height:1.5;margin-top:4px">Setiap baris = satu koin yang dibeli lalu dijual bot. TRAIL = dijual lewat trailing stop, SL = dijual karena kena stop loss. Harga ditampilkan ×1000 seperti konvensi situs ini.</div>
-</section>
+// Ocean: dense mesh whose vertices are animated every frame for actual 3D waves.
+const waterGeo = new THREE.PlaneGeometry(65,52,150,120); waterGeo.rotateX(-Math.PI/2);
+const waterMat = new THREE.MeshPhysicalMaterial({color:0x087bb4,roughness:.24,metalness:.16,clearcoat:1,clearcoatRoughness:.18,transparent:false});
+const water = new THREE.Mesh(waterGeo,waterMat); water.position.set(0,-.02,-2); water.receiveShadow=true; scene.add(water);
+const waterBase = waterGeo.attributes.position.array.slice();
+// Underwater light shafts
+for(let i=0;i<9;i++){const beam=mesh(new THREE.CylinderGeometry(.03,.6,9,12,1,true),new THREE.MeshBasicMaterial({color:0x8de8ff,transparent:true,opacity:.055,side:THREE.DoubleSide,depthWrite:false}),scene,[-7+i*1.8,-3,-3-i*.4]);beam.rotation.z=.18;}
+// seabed + coral
+mesh(new THREE.PlaneGeometry(65,30),mat(0x124e59),scene,[0,-5.3,-4]).rotation.x=-Math.PI/2;
+for(let i=0;i<28;i++){const x=-13+Math.random()*26,z=-10+Math.random()*9;const c=mat([0xe76d70,0xf0a34e,0x8c6bd6,0x4cc4ae][i%4]);const h=.5+Math.random()*1.2;const stem=mesh(new THREE.CylinderGeometry(.06,.12,h,7),c,scene,[x,-4.7+h/2,z]);for(let k=0;k<3;k++)mesh(sphere,c,scene,[x+(Math.random()-.5)*.6,-4.1+h*.7,z],[.22,.25,.22]);}
 
-<section class="panel">
-  <h3>🔔 Aktivitas terbaru <span id="liveBadge" style="font-size:11px;color:#b9c0d8">• data file 18 Nov 00:47</span></h3>
-  <div id="eventList" style="font-size:13px;line-height:1.7;color:#d7dce8">Belum ada aktivitas live — bot mengirim peristiwa ke sini begitu jalan.</div>
-</section>
-  <button class="btn" id="chartBtn">LIHAT CHART</button>
-  <div id="chartWrap">
-    <svg id="chart" viewBox="0 0 480 180" role="img" aria-label="Grafik Entry, Puncak, Sekarang"></svg>
-    <div style="font-size:12px;color:#b9c0d8;margin-top:6px">Garis: Entry → Puncak → Sekarang. Garis merah putus-putus = SL. Ini bukan riwayat harga lengkap, hanya 3 titik dari data posisi.</div>
-  </div>
-</section>
+// Wooden fishing pier, posts and lantern.
+const dock=new THREE.Group();scene.add(dock);dock.position.set(-5.2,.05,2.7);
+box(dock,0x80512e,[0,0,0],[4.8,.35,3.5]);
+for(let i=0;i<8;i++)box(dock,i%2?0xa96e3b:0x966033,[-2.05+i*.58,.2,0],[.52,.08,3.45]);
+for(const x of [-1.8,1.8])for(const z of [-1.25,1.25])box(dock,0x563820,[x,-.75,z],[.2,1.8,.2]);
+// dock side lantern
+const lantern=new THREE.Group();dock.add(lantern);lantern.position.set(-1.6,.7,1.35);
+mesh(new THREE.CylinderGeometry(.22,.28,.5,8),mat(0x283c4b,.35,.6),lantern,[0,0,0]);mesh(new THREE.SphereGeometry(.18,12,10),new THREE.MeshBasicMaterial({color:0xffbf55}),lantern,[0,.04,0]);const lamp=new THREE.PointLight(0xffa83d,8,5);lamp.position.set(0,.1,0);lantern.add(lamp);
 
-<button class="btn" id="notifBtn" style="margin-top:14px">🔔 Aktifkan notifikasi di HP ini</button>
+// Stylized 3D ANIME WOMAN angler — seated pose, long hair, feminine silhouette,
+// visible face oriented toward the ocean (screen-right) and partly toward camera.
+const woman=new THREE.Group();scene.add(woman);
+// Move her fully onto the visible right half of the pier, clear of the scanner overlay.
+woman.position.set(-3.15,.42,2.05);woman.rotation.y=1.08;woman.scale.setScalar(1.22);
+const skin=mat(0xffd2bd), skinShade=mat(0xe9a995), hair=mat(0x24151b,.15), hairHi=mat(0x633342), hairLight=mat(0x96505a),
+      blouse=mat(0xfff2e8), blouseTrim=mat(0xe8b7aa), skirt=mat(0x3c9cb5), skirtShade=mat(0x216b88),
+      boot=mat(0x6b4637), hatmat=mat(0xe8c88f), hatBand=mat(0x9b5144), flower=mat(0xfff8ed);
+const torso=new THREE.Group();woman.add(torso);torso.position.set(0,1.12,0);
+// Waist and fitted blouse give the body a clear feminine shape.
+mesh(new THREE.CapsuleGeometry(.27,.48,6,14),blouse,torso,[0,.02,0],[1,.95,.82]);
+mesh(new THREE.SphereGeometry(.31,20,16),blouse,torso,[-.19,.20,.12],[.72,.78,.78]);
+mesh(new THREE.SphereGeometry(.31,20,16),blouse,torso,[.19,.20,.12],[.72,.78,.78]);
+mesh(new THREE.TorusGeometry(.285,.025,8,28),blouseTrim,torso,[0,-.23,.02],[1,.72,1]);
+// Neck and anime face. Face points toward +Z; the body is turned toward the fishing area.
+mesh(new THREE.CylinderGeometry(.105,.13,.23,16),skin,torso,[0,.43,.02]);
+const head=new THREE.Group();torso.add(head);head.position.set(0,.77,.055);
+mesh(new THREE.SphereGeometry(.39,28,22),skin,head,[0,0,0],[.83,1.02,.78]);
+// Cheeks and small nose.
+for(const x of [-.205,.205])mesh(new THREE.SphereGeometry(.075,12,10),mat(0xf3a8a0),head,[x,-.105,.285],[1.2,.48,.22]);
+mesh(new THREE.SphereGeometry(.045,12,10),skinShade,head,[0,-.015,.31],[.7,1,.55]);
+// Large anime eyes with irises, highlights, brows and lashes.
+for(const x of [-.145,.145]){
+  mesh(new THREE.SphereGeometry(.092,16,12),mat(0xfffbf4),head,[x,.055,.295],[.78,1.22,.42]);
+  mesh(new THREE.SphereGeometry(.061,14,12),mat(0x70452f),head,[x+.012,.045,.329],[.78,1.15,.35]);
+  mesh(new THREE.SphereGeometry(.034,12,10),mat(0x171b2a),head,[x+.014,.04,.35],[.8,1.1,.3]);
+  mesh(new THREE.SphereGeometry(.022,10,8),mat(0xffffff),head,[x-.008,.072,.362]);
+  const brow=mesh(new THREE.CapsuleGeometry(.018,.12,3,6),hair,head,[x,.17,.29]);brow.rotation.z=x<0?-.12:.12;
+  const lash=mesh(new THREE.CapsuleGeometry(.012,.10,3,5),hair,head,[x,.125,.32]);lash.rotation.z=x<0?-.35:.35;
+}
+// Smile.
+const smile=mesh(new THREE.TorusGeometry(.052,.009,6,16,Math.PI),mat(0xa94e58),head,[0,-.205,.302]);smile.rotation.z=Math.PI;
+// Long dark auburn hair cap and flowing locks down the back and shoulders.
+mesh(new THREE.SphereGeometry(.405,24,18,0,Math.PI*2,0,Math.PI*.62),hair,head,[0,.12,-.055],[1.04,1.08,1.02]);
+for(let i=0;i<13;i++){
+  const x=-.34+i*.057;
+  const len=.92+(i%4)*.13;
+  const lock=mesh(new THREE.CapsuleGeometry(.064,len,5,9),i%3===0?hairHi:hair,head,[x,-.48,-.19-(i%3)*.035],[1,1,.82]);
+  lock.rotation.z=(i-6)*-.035;lock.rotation.x=-.12;
+}
+// Two front locks frame the cheeks.
+for(const side of [-1,1]){
+  const front=mesh(new THREE.CapsuleGeometry(.055,.55,5,9),hairHi,head,[side*.31,-.20,.16]);
+  front.rotation.z=side*.13;
+}
+// Wide straw hat, crown, red-brown band and flower on the camera-facing side.
+mesh(new THREE.CylinderGeometry(.61,.58,.085,40),hatmat,head,[0,.39,-.025],[1,.32,1]);
+mesh(new THREE.CylinderGeometry(.285,.32,.29,24),hatmat,head,[0,.56,-.035]);
+mesh(new THREE.CylinderGeometry(.326,.326,.052,24),hatBand,head,[0,.51,-.035]);
+mesh(new THREE.SphereGeometry(.085,12,10),mat(0xe6a64c),head,[.39,.49,.16]);
+for(let i=0;i<6;i++){const a=i*Math.PI/3;mesh(new THREE.SphereGeometry(.075,12,10),flower,head,[.39+Math.cos(a)*.095,.49+Math.sin(a)*.095,.16],[1,.8,.55]);}
+// Seated hips and skirt; thighs extend forward over the pier, knees bent down.
+mesh(new THREE.SphereGeometry(.39,20,14),skirt,woman,[0,.78,-.02],[1.12,.62,.95]);
+mesh(new THREE.CylinderGeometry(.40,.47,.22,24),skirt,woman,[0,.67,-.02],[1,.55,1]);
+const legs=[];
+for(const side of [-1,1]){
+  const thigh=new THREE.Group();woman.add(thigh);thigh.position.set(side*.20,.78,.12);
+  mesh(new THREE.CapsuleGeometry(.145,.62,5,10),skin,thigh,[side*.10,-.04,.47],[1,1,.92]);
+  // Bent lower leg and small brown shoe rest on the dock.
+  mesh(new THREE.CapsuleGeometry(.115,.43,5,9),skin,thigh,[side*.13,-.34,.83],[1,1,.9]);
+  mesh(new THREE.BoxGeometry(.25,.13,.40),boot,thigh,[side*.13,-.57,1.03]);
+  legs.push(thigh);
+}
+// Slim arms, sleeves and hands positioned around the fishing rod.
+const armL=new THREE.Group();woman.add(armL);armL.position.set(-.29,1.68,.02);
+mesh(new THREE.CapsuleGeometry(.105,.34,5,10),blouse,armL,[0,-.10,0],[1,1,.9]);
+mesh(new THREE.CapsuleGeometry(.075,.42,5,10),skin,armL,[.02,-.39,.12]);
+mesh(new THREE.SphereGeometry(.09,12,10),skin,armL,[.02,-.62,.16]);armL.rotation.z=-.48;
+const armR=new THREE.Group();woman.add(armR);armR.position.set(.28,1.68,.02);
+mesh(new THREE.CapsuleGeometry(.105,.34,5,10),blouse,armR,[0,-.10,0],[1,1,.9]);
+mesh(new THREE.CapsuleGeometry(.075,.42,5,10),skin,armR,[-.02,-.39,.12]);
+mesh(new THREE.SphereGeometry(.095,14,12),skin,armR,[.175,-.605,.16]);armR.rotation.z=.32;
+// Rod grip is placed exactly at the right hand; the rod casts out over the water.
+const rodPivot=new THREE.Group();woman.add(rodPivot);rodPivot.position.set(.455,1.075,.18);rodPivot.rotation.z=-.76;
+const rod=mesh(new THREE.CylinderGeometry(.035,.075,5.5,10),mat(0x4a2f25,.3),rodPivot,[0,2.75,0]);rod.rotation.z=-.10;
+// Fishing line runs from the rod tip to a world-space bobber that follows its endpoint.
+const lineMat=new THREE.LineBasicMaterial({color:0xe8f8ff});
+const fishingLine=new THREE.Line(new THREE.BufferGeometry(),lineMat);scene.add(fishingLine);
+const lineEndLocal=new THREE.Vector3(2.76,1.30,0);
+const rodGrip=mesh(new THREE.SphereGeometry(.105,14,12),skin,rodPivot,[0,0,.015]);
 
-<p class="note">Halaman ini terkunci dengan kunci tampilan — buka lewat link yang berisi kunci, atau masukkan kuncinya di layar kunci. Kunci aslinya tidak tersimpan di kode situs, hanya hash-nya yang dicek di browser; ini gerbang tampilan, bukan pengaman server. Data DEMO dari file bot SolBot-CMD per 18 Nov 2026 00:47 WIB (modes/*/data/state_paper.json + status.json) — bukan data live. Posisi $SA (EXCLUSIVE) dihapus dari tampilan atas permintaan pengguna — itu posisi lama, harganya terakhir diperbarui di file bot pada 04 Nov 22:51. Dua posisi $SA lain (EASY, MEDIUM) sudah ditutup 05 Nov 14:06 kena SL. Total nyata: 3.3373 SOL, Menang 102/309. Situs ini sekarang live: bot mengirim status ke /api/status &amp; peristiwa ke /api/events (Netlify Functions, kunci bot dicek di server), halaman mengambilnya tiap 60 detik; kunci tampilan juga dicek server untuk data live. Kalau backend belum ada datanya, halaman memakai data file bot per 18 Nov 2026 00:47 WIB. Tombol notifikasi hanya status demo di HP ini (localStorage + izin notifikasi browser); notifikasi bot aslinya lewat Netlify, Telegram di file ini kosong (tidak aktif). Mode DEMO-EASY (demo, beli 25%/trade, tanpa minimal $5) tampil sebagai mode ke-6; notifikasinya masuk begitu backend baru tayang.</p>
-</div>
+// Fish factory with moving tail and token name sprite.
+const fishGroup=new THREE.Group();scene.add(fishGroup);const fishObjects=new Map();
+function labelSprite(text){const c=document.createElement('canvas');c.width=256;c.height=80;const ctx=c.getContext('2d');ctx.fillStyle='rgba(2,24,53,.82)';ctx.strokeStyle='#9de9ff';ctx.lineWidth=5;roundRect(ctx,8,8,240,64,20);ctx.fill();ctx.stroke();ctx.font='bold 34px Nunito, sans-serif';ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.fillText(String(text).slice(0,18),128,51);const tex=new THREE.CanvasTexture(c);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.scale.set(1.5,.47,1);return sp;}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function makeFish(symbol,color=0xffa83d,scale=1,withLabel=true){const g=new THREE.Group();const body=mesh(new THREE.SphereGeometry(.55,18,14),mat(color,.28,.12),g,[0,0,0],[1.35,.72,.62]);const belly=mesh(new THREE.SphereGeometry(.42,14,10),mat(0xffe5c1),g,[.03,-.22,.02],[1.15,.42,.55]);const tailPivot=new THREE.Group();g.add(tailPivot);tailPivot.position.set(-.68,0,0);const tail=mesh(new THREE.ConeGeometry(.34,.65,3),mat(color),tailPivot,[-.28,0,0]);tail.rotation.z=Math.PI/2;for(const side of [-1,1])mesh(new THREE.ConeGeometry(.18,.42,3),mat(color),g,[.05,side*.37,.02],[1,1,.45]).rotation.z=side*.6;mesh(sphere,mat(0xffffff),g,[.48,.16,.48],[.12,.13,.08]);mesh(sphere,mat(0x152b3c),g,[.51,.16,.545],[.055,.075,.035]);if(withLabel){const label=labelSprite(symbol);label.position.set(0,.93,0);g.add(label);}g.userData={tailPivot,symbol};g.scale.setScalar(scale);return g;}
+const fishPalette=[0xffa23a,0x8d62ef,0x43c7db,0xf16d8a,0xf1ca4c,0x4b8be8];
+for(let i=0;i<5;i++){const f=makeFish('AMBIENT',fishPalette[i%fishPalette.length],.45+Math.random()*.2,false);fishGroup.add(f);f.userData.baseX=-8+Math.random()*16;f.userData.baseY=-2.4-Math.random()*1.2;f.userData.baseZ=-5+Math.random()*4;f.userData.phase=Math.random()*6.28;f.userData.speed=.3+Math.random()*.3;}
+function updateTokenFish(status){const tokens=[...(status?.scanning||[]).slice(0,10),...(status?.watch||[]),...(status?.positions||[])];const wanted=new Map();for(const t of tokens){const key=t.mint||t.symbol;if(!key)continue;wanted.set(key,t);}
+ for(const [key,t] of wanted){if(!fishObjects.has(key)){const f=makeFish(t.symbol||'TOKEN',t.pnl>0?0xffc64c:0x66c8f0,1.05);fishGroup.add(f);f.userData.baseX=-1+Math.random()*7;f.userData.baseY=-1.3-Math.random()*1.8;f.userData.baseZ=-1+Math.random()*-3;f.userData.phase=Math.random()*6.28;f.userData.speed=.65;f.userData.tokenKey=key;f.userData.isPosition=(status.positions||[]).some(p=>p.mint===key);fishObjects.set(key,f);}const f=fishObjects.get(key);f.userData.isPosition=(status.positions||[]).some(p=>p.mint===key);f.userData.stage=f.userData.isPosition?'BUY':(status.watch||[]).some(w=>w.mint===key)?'WATCH':'SCAN';f.userData.symbol=t.symbol||'TOKEN';f.children.find(x=>x.isSprite)?.material.map?.dispose?.();f.children.find(x=>x.isSprite)?.removeFromParent();const sp=labelSprite('$'+(t.symbol||'TOKEN'));sp.position.set(0,.95,0);f.add(sp);}
+ for(const [key,f] of fishObjects){if(!wanted.has(key)){f.userData.leaving=true;setTimeout(()=>{if(f.userData.leaving){fishGroup.remove(f);fishObjects.delete(key);}},1600);}}
+}
 
-<dialog id="settingsDlg">
-  <h3>Pengaturan</h3>
-  <label><input type="checkbox" id="animChk" checked> Animasi musuh &amp; menara jalan</label>
-  <label><input type="checkbox" id="notifChk"> Notifikasi aktif</label>
-  <p style="font-size:13px;color:#b9c0d8">Menonaktifkan animasi sama dengan tombol ⏸ di atas. Notifikasi di sini hanya status demo di HP ini, belum terhubung ke server Telegram / bot.</p>
-  <button class="btn ghost" id="lockBtn">🔐 Kunci halaman lagi</button>
-  <button class="btn" id="closeDlg">Tutup</button>
-</dialog>
+// Floating buoy and ring ripple.
+const buoy= new THREE.Group();scene.add(buoy);mesh(new THREE.SphereGeometry(.25,16,12),mat(0xff4c42),buoy,[0,0,0],[.8,.8,.8]);mesh(new THREE.CylinderGeometry(.08,.08,.32,12),mat(0xffffff),buoy,[0,-.2,0]);const ring=mesh(new THREE.TorusGeometry(.34,.025,8,40),new THREE.MeshBasicMaterial({color:0xa6f1ff,transparent:true,opacity:.6}),scene,[0,.1,-2]);
 
-<div id="toast" role="status"></div>
+// Simple procedural clouds and distant birds are already in 3D. Main animation loop.
+const clock=new THREE.Clock();let latest=null,prevTradeCount=0,lastSignature='',soundOn=false;let lastMsg='';
+function format(n,d=3){if(n===null||n===undefined||Number.isNaN(Number(n)))return '—';return Number(n).toFixed(d);}
+function setText(id,v){const el=$(id);if(el)el.textContent=v;}
+function addEvent(kind,title,body=''){const host=$('events');const row=document.createElement('div');row.className='event '+kind;const ico=kind==='buy'?'🎣':kind==='sell'?'🐟':kind==='sl'?'⚠️':'✨';row.innerHTML=`<span class="ico">${ico}</span><div><strong></strong><small></small></div>`;row.querySelector('strong').textContent=title;row.querySelector('small').textContent=body;host.prepend(row);while(host.children.length>7)host.lastChild.remove();}
+function renderStatus(s){if(!s)return;latest=s;const start=Number(s.start||0),eq=Number(s.eq||0),pnl=Number(s.closed_pnl??(eq-start));setText('balance',`${format(eq,4)} SOL`);setText('balanceUsd',`Free ${format(s.free||0,4)} SOL · ${s.demo?'DEMO':'LIVE MODE'}`);setText('openCount',(s.positions||[]).length);setText('pnl',`${pnl>=0?'+':''}${format(pnl,4)} SOL`);setText('tradeCount',`${s.trades_total??(s.trades||[]).length} trades`);setText('mode',s.mode||'—');setText('scanCount',s.scan_tokens??(s.scanning||[]).length);setText('watchCount',(s.watch||[]).length);setText('updated',s.updated_label||new Date(s.updated_at||Date.now()).toLocaleTimeString());
+ const scanning=$('scanning');scanning.replaceChildren();(s.scanning||[]).slice(0,7).forEach(t=>{const e=document.createElement('div');e.className='token';e.innerHTML='<div><b></b><small></small></div><span class="tag">SCAN</span>';e.querySelector('b').textContent='$'+(t.symbol||'TOKEN');e.querySelector('small').textContent=t.source||'Candidate';scanning.append(e);});if(!scanning.children.length)scanning.innerHTML='<div class="empty">Tidak ada kandidat saat ini</div>';
+ const watch=$('watch');watch.replaceChildren();(s.watch||[]).slice(0,6).forEach(t=>{const e=document.createElement('div');e.className='token';e.innerHTML='<div><b></b><small></small></div><span class="tag">WATCH</span>';e.querySelector('b').textContent='$'+(t.symbol||'TOKEN');e.querySelector('small').textContent=t.src||t.source||'Watchlist';watch.append(e);});if(!watch.children.length)watch.innerHTML='<div class="empty">Belum ada watchlist</div>';
+ const pos=$('positions');pos.replaceChildren();(s.positions||[]).forEach(p=>{const e=document.createElement('div');e.className='position';const pct=((Number(p.last_px||p.entry||0)/Number(p.entry||1))-1)*100;e.innerHTML='<b></b><span class="pnl"></span><small></small>';e.querySelector('b').textContent='$'+p.symbol;e.querySelector('.pnl').textContent=`${pct>=0?'+':''}${pct.toFixed(1)}%`;e.querySelector('small').textContent=`Entry ${p.entry||'—'} · Now ${p.last_px||p.entry||'—'}`;pos.append(e);});if(!pos.children.length)pos.innerHTML='<div class="empty">Belum ada posisi aktif</div>';
+ const hist=$('history');hist.replaceChildren();(s.trades||[]).slice(-8).reverse().forEach(t=>{const tr=document.createElement('tr');const date=t.closed||t.opened||t.ts||Date.now();const time=typeof date==='number'?new Date(date*1000).toLocaleTimeString():String(date).slice(-8);const action=(t.action||t.side||t.result||'SELL').toUpperCase();tr.innerHTML='<td></td><td></td><td></td><td></td>';tr.children[0].textContent=time;tr.children[1].textContent='$'+(t.symbol||'TOKEN');tr.children[2].textContent=action;tr.children[2].className=action.includes('BUY')?'buy-text':'sell-text';tr.children[3].textContent=`${format(t.pnl_sol||0,4)} SOL`;hist.append(tr);});if(!hist.children.length)hist.innerHTML='<tr><td colspan="4" class="empty">Belum ada transaksi</td></tr>';
+ updateTokenFish(s);document.querySelectorAll('#events .muted').forEach(e=>e.remove());if(s.last_event&&s.last_event!==lastSignature){lastSignature=s.last_event;addEvent('info',s.last_event,s.source||'');}
+ const openNow=new Set((s.positions||[]).map(p=>p.mint||p.symbol));for(const p of (s.positions||[])){const k=p.mint||p.symbol;if(!previousPositionKeys.has(k))addEvent('buy',`BUY $${p.symbol||'TOKEN'}`,'Ikan memakan umpan · posisi terbuka');}for(const k of previousPositionKeys){if(!openNow.has(k))addEvent('sell',`CATCH ${String(k).slice(0,8)}`,'Posisi ditutup · lihat trade history');}previousPositionKeys=openNow;
+ const trades=s.trades||[];if(trades.length>prevTradeCount){const t=trades[trades.length-1];const win=Number(t.pnl_sol||0)>=0;const kind=String(t.result||'SELL').toUpperCase();addEvent(kind==='SL'?'sl':'sell',`${kind} $${t.symbol||'TOKEN'}`,`${format(t.pnl_sol||0,4)} SOL`);toast(`Trade update: $${t.symbol||'TOKEN'}`);}prevTradeCount=trades.length;
+}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+function setConnection(ok){$('livePill').classList.toggle('online',ok);$('livePill').querySelector('b').textContent=ok?'LIVE':'OFFLINE';setText('connectionText',ok?'Connected':'Disconnected');}
+let socket;let previousPositionKeys=new Set();
+function connect(){const url=window.SOLBOT_CONFIG?.wsUrl||'';if(!url||url.includes('GANTI-DENGAN')){setConnection(false);return;}try{socket=new WebSocket(url);socket.onopen=()=>{setConnection(true);toast('Python bot terhubung');};socket.onmessage=e=>{try{const s=JSON.parse(e.data);if(s&&s.updated_at){renderStatus(s);setConnection(true);}}catch(err){console.warn('Bad bridge payload',err);}};socket.onclose=()=>{setConnection(false);setTimeout(connect,window.SOLBOT_CONFIG?.reconnectMs||2500);};socket.onerror=()=>setConnection(false);}catch(e){setConnection(false);setTimeout(connect,3000);}}
+$('soundBtn').addEventListener('click',()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'♫ ON':'♫';toast(soundOn?'Sound UI enabled':'Sound UI muted');});
+$('fsBtn').addEventListener('click',()=>{const app=$('app');app.classList.toggle('ui-hidden');toast(app.classList.contains('ui-hidden')?'Mode fullscreen — ketuk ⛶ untuk menampilkan panel lagi':'Panel ditampilkan');});
+// Peta memancing-data.json (sumber yang sama dengan situs Mancing 2D) ke
+// bentuk yang dipakai renderStatus. Ikan = token hasil scanner (watchlist).
+function mapMancing(d){const fish=Array.isArray(d.fish)?d.fish:[];const watch=fish.filter(f=>f.result!=='open').map(f=>({symbol:f.sym,mint:f.sym,src:f.src||'Scanner',source:f.note||('Skor '+f.score),score:f.score,price:f.price}));const positions=fish.filter(f=>f.result==='open').map(f=>({symbol:f.sym,mint:f.sym,entry:f.price,last_px:f.price}));return{start:Number(d.start_sol||1),eq:Number(d.equity??d.start_sol??1),free:Number(d.equity??d.start_sol??1),demo:/demo/i.test(d.source||'')||d.mode==='easy',mode:d.mode||'demo-easy',positions,trades:[],scanning:watch,watch,updated_at:Date.now(),updated_label:d.updated||'',scan_tokens:d.scan?.tokens??watch.length,scan_passed:d.scan?.passed??watch.length,trades_total:d.trades_total??0,last_event:d.last_event||'',source:d.source||''};}
+async function fetchLive(){try{const r=await fetch('./memancing-data.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();const s=mapMancing(d);renderStatus(s);setConnection(true);const pill=$('livePill');pill.querySelector('b').textContent='LIVE';pill.querySelector('small').textContent='Data '+(d.updated||'');}catch(e){setConnection(false);}}
 
-<script>
-const MODES=[
- {id:'EASY',monster:'Tuyul',emoji:'🧌',bal:1.0690,pct:6.9,win:12,tot:27,pos:0,status:'AKTIF',dead:false},
- {id:'MEDIUM',monster:'Pocong',emoji:'👻',bal:0.9458,pct:-5.4,win:2,tot:11,pos:0,status:'AKTIF',dead:false},
- {id:'HARD',monster:'Buto Ijo',emoji:'👹',bal:0.1190,pct:-88.1,win:46,tot:146,pos:0,status:'MATI — STOP saldo habis',dead:true},
- {id:'EXCLUSIVE',monster:'Genderuwo',emoji:'🦍',bal:0.6787,pct:-32.1,win:27,tot:74,pos:0,status:'AKTIF',dead:false},
- {id:'NARASI',monster:'Kuntilanak',emoji:'👩‍🦰',bal:0.5247,pct:-47.5,win:15,tot:51,pos:0,status:'AKTIF',dead:false},
- {id:'DEMO-EASY',monster:'Jenglot',emoji:'🧟',bal:1.0000,pct:0,win:0,tot:0,pos:0,status:'AKTIF',dead:false},
-];
-const POS=[];
-const HIDDEN_POS=[{mode:'EXCLUSIVE',symbol:'SA'}]; // posisi $SA dihapus atas permintaan pengguna (posisi lama) — jangan tampilkan lagi, termasuk dari data live
-const CLOSED=[
- {label:'DEMO • EASY — $SA',pct:-16.3,entry:0.8627,exit:0.7259,cap:'0.1090 SOL',pnl:'−0.0178 SOL',closed:'05 Nov 14:06 • SL'},
- {label:'DEMO • MEDIUM — $SA',pct:-13.4,entry:0.7524,exit:0.6555,cap:'0.0943 SOL',pnl:'−0.0127 SOL',closed:'05 Nov 14:06 • SL'},
-];
-// 12 trade terbaru dari 309 total (file bot, history.trades per mode, diurutkan dari yang terbaru).
-// res: TRAIL = jual lewat trailing stop, SL = jual kena stop loss. Harga ×1000 seperti konvensi tampilan situs.
-const TRADES=[
- {mode:'EXCLUSIVE',sym:'JVOLT',res:'TRAIL',pct:14.82,pnl:0.0149,entry:0.3840,exit:0.4428,closed:'18 Nov 00:44 WIB'},
- {mode:'EXCLUSIVE',sym:'Lucia',res:'TRAIL',pct:-0.07,pnl:-0.0001,entry:0.6930,exit:0.6960,closed:'18 Nov 00:39 WIB'},
- {mode:'NARASI',sym:'JVOLT',res:'SL',pct:-25.55,pnl:-0.0257,entry:0.4567,exit:0.3422,closed:'18 Nov 00:28 WIB'},
- {mode:'EASY',sym:'SA',res:'SL',pct:-16.31,pnl:-0.0178,entry:0.8627,exit:0.7259,closed:'05 Nov 14:06 WIB'},
- {mode:'MEDIUM',sym:'SA',res:'SL',pct:-13.41,pnl:-0.0127,entry:0.7524,exit:0.6555,closed:'05 Nov 14:06 WIB'},
- {mode:'MEDIUM',sym:'RICO',res:'SL',pct:-13.40,pnl:-0.0128,entry:0.5749,exit:0.5008,closed:'04 Nov 22:38 WIB'},
- {mode:'EASY',sym:'RICO',res:'SL',pct:-16.31,pnl:-0.0178,entry:0.5879,exit:0.4947,closed:'04 Nov 22:38 WIB'},
- {mode:'NARASI',sym:'VI',res:'SL',pct:-22.54,pnl:-0.0227,entry:0.8257,exit:0.6437,closed:'04 Nov 22:37 WIB'},
- {mode:'EXCLUSIVE',sym:'LEOMAN',res:'SL',pct:-23.29,pnl:-0.0234,entry:0.2050,exit:0.1583,closed:'04 Nov 22:36 WIB'},
- {mode:'NARASI',sym:'LEOMAN',res:'SL',pct:-21.69,pnl:-0.0218,entry:0.2030,exit:0.1600,closed:'04 Nov 22:30 WIB'},
- {mode:'EXCLUSIVE',sym:'RAMBO',res:'SL',pct:-15.23,pnl:-0.0153,entry:2.4859,exit:2.1196,closed:'04 Nov 22:19 WIB'},
- {mode:'EASY',sym:'GTA',res:'TRAIL',pct:26.39,pnl:0.0275,entry:0.7601,exit:0.9955,closed:'31 Oct 09:23 WIB'},
-];
-let selMode=0, selPos=0;
-const $=id=>document.getElementById(id);
-// Gerbang kunci tampilan: kunci asli TIDAK disimpan di kode situs, hanya hash SHA-256-nya.
-// Buka lewat #k=... di URL, kunci yang dimasukkan, atau flag yang tersimpan di HP ini.
-const VIEW_HASH='e3c99bb1ab2bb59052805f2ce3eb3f6319bc3b8b04dc7d10cf1ce01d6060800b';
-async function sha256hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
-let viewKey='';
-async function tryUnlock(key){
-  if(!key) return false;
-  if(await sha256hex(key.trim())===VIEW_HASH){
-    viewKey=key.trim();
-    localStorage.setItem('solbotView','1');
-    localStorage.setItem('solbotKey',viewKey);
-    $('lock').style.display='none';
-    fetchLive();
-    return true;
-  }
-  return false;
-}
-async function gateInit(){
-  if(localStorage.getItem('solbotView')==='1'){
-    viewKey=localStorage.getItem('solbotKey')||'';
-    $('lock').style.display='none';return;
-  }
-  const m=location.hash.match(/k=([^&]+)/);
-  if(m && await tryUnlock(decodeURIComponent(m[1]))) return;
-}
-gateInit();
-// Bila pengguna menempel link berkunci saat halaman sedang terkunci (hash berubah tanpa reload),
-// periksa lagi kuncinya — jangan tunggu reload.
-window.addEventListener('hashchange',()=>{ $('lockErr').style.display='none'; gateInit(); });
-$('unlockBtn').onclick=async()=>{
-  if(!await tryUnlock($('keyInput').value)) $('lockErr').style.display='block';
-};
-$('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter') $('unlockBtn').click();});
-function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
-function fmtPct(v){return (v>0?'+':'')+v.toFixed(1).replace('.',',')+'%'}
-function renderModes(){
- const box=$('modes');box.innerHTML='';
- MODES.forEach((m,i)=>{
-  const b=document.createElement('button');b.className='modebtn'+(m.dead?' dead':'');b.setAttribute('aria-pressed',i===selMode?'true':'false');
-  b.innerHTML=`<span class="em">${m.emoji}</span><b>${m.id}</b><br>${m.monster}<br>${m.bal.toFixed(4)} SOL`;
-  b.onclick=()=>{selMode=i;renderModes();renderMode();};
-  box.appendChild(b);
- });
-}
-function renderMode(){
- const m=MODES[selMode];
- $('modeTitle').textContent=`${m.id} • ${m.monster}`;
- const hp=Math.min(100,Math.round(m.bal/1*100));
- $('modeHp').style.width=hp+'%';
- $('modeHpWrap').classList.toggle('low',m.dead);
- $('modeHpText').textContent=`Saldo ${m.bal.toFixed(4)} / 1.0000 SOL — HP ${hp}/100`;
- $('mBalance').textContent=m.bal.toFixed(4)+' SOL';
- const p=$('mPct');p.textContent=fmtPct(m.pct);p.className=m.pct>=0?'up':'down';
- $('mWin').textContent=`${m.win} / ${m.tot}`;
- $('mPos').textContent=`${m.pos} posisi`;
- $('mStatus').textContent=(m.dead?'● ':'● ')+m.status;
- $('mStatus').style.color=m.dead?'#ff6b6b':'#37c978';
- $('mMonster').textContent=m.monster;
- $('towerLabel').textContent=`Menara ${m.id} • ${m.monster}`;
- $('detailExtra').style.display='none';$('detailBtn').textContent='LIHAT DETAIL';
-}
-function renderPos(){
- const box=$('posList');box.innerHTML='';
- if(!POS.length){
-  const b=document.createElement('button');b.className='posbtn';b.disabled=true;
-  b.textContent='Tidak ada posisi terbuka — posisi $SA sudah dihapus';
-  box.appendChild(b);
- }
- POS.forEach((p,i)=>{
-  const b=document.createElement('button');b.className='posbtn';b.setAttribute('aria-pressed',i===selPos?'true':'false');
-  b.textContent=`${p.label}  •  ${fmtPct(p.pct)}`;
-  b.onclick=()=>{selPos=i;renderPos();renderPosDetail();};
-  box.appendChild(b);
- });
- const cb=$('closedList');cb.innerHTML='';
- CLOSED.forEach(c=>{
-  const d=document.createElement('div');d.className='posbtn';d.style.cursor='default';
-  d.innerHTML=`<b>${c.label}</b> • ${fmtPct(c.pct)}<br><span style="font-size:12px;color:#b9c0d8">Entry $${c.entry.toFixed(4)} → keluar $${c.exit.toFixed(4)} • modal ${c.cap} • PnL ${c.pnl}<br>${c.closed}</span>`;
-  cb.appendChild(d);
- });
-}
-function renderPosDetail(){
- const p=POS[selPos];
- if(!p){
-  $('pToken').textContent='—';
-  const pc=$('pPct');pc.textContent='—';pc.className='';
-  $('pEntry').textContent='—';$('pNow').textContent='—';$('pPeak').textContent='—';$('pSl').textContent='—';
-  $('pCap').textContent='—';$('pVal').textContent='—';$('pAge').textContent='—';$('pUpd').textContent='—';
-  $('posExtra').textContent='Tidak ada posisi terbuka saat ini.';
-  $('enemyBtn').style.display='none';
-  return;
- }
- $('enemyBtn').style.display='';
- $('pToken').textContent='$SA';
- const pc=$('pPct');pc.textContent=fmtPct(p.pct);pc.className=p.pct>=0?'up':'down';
- $('pEntry').textContent='$'+p.entry.toFixed(4);
- $('pNow').textContent='$'+p.now.toFixed(4);
- $('pPeak').textContent='+'+p.peak.toFixed(1).replace('.',',')+'%';
- $('pSl').textContent=p.sl.toFixed(1).replace('.',',')+'%';
- $('pCap').textContent=p.cap;$('pVal').textContent=p.val;$('pAge').textContent=p.age;$('pUpd').textContent=p.upd;
- if(p.tp1){$('posExtra').innerHTML=`TP1 <b class="up">+${((p.tp1/p.entry-1)*100).toFixed(0)}% ($${p.tp1.toFixed(4)})</b> • SL ${p.sl.toFixed(1).replace('.',',')}%${p.url?` • <a href="${p.url}" target="_blank" rel="noopener" style="color:#ffd94d">DexScreener</a>`:''}`;}
- if($('chartWrap').style.display==='block') drawChart();
-}
-function drawChart(){
- const p=POS[selPos];
- const peakPrice=p.entry*(1+p.peak/100), slPrice=p.entry*(1+p.sl/100);
- const pts=[['Entry',p.entry],['Puncak',peakPrice],['Sekarang',p.now]];
- const all=[...pts.map(x=>x[1]),slPrice];const mn=Math.min(...all)*0.98,mx=Math.max(...all)*1.02;
- const X=i=>40+i*190, Y=v=>160-(v-mn)/(mx-mn)*130;
- let s=`<line x1="40" y1="${Y(slPrice)}" x2="430" y2="${Y(slPrice)}" stroke="#ff6b6b" stroke-dasharray="6 5" stroke-width="2"/><text x="435" y="${Y(slPrice)+4}" fill="#ff6b6b" font-size="12">SL</text>`;
- s+=`<polyline points="${pts.map((pt,i)=>X(i)+','+Y(pt[1])).join(' ')}" fill="none" stroke="#ffd94d" stroke-width="3"/>`;
- pts.forEach((pt,i)=>{const last=i===pts.length-1;const tx=last?X(i)+8:X(i)-22;s+=`<circle cx="${X(i)}" cy="${Y(pt[1])}" r="6" fill="#37c978"/><text x="${tx}" y="${Y(pt[1])-12}" fill="#fff" font-size="13" text-anchor="${last?'end':'start'}">${pt[0]} $${pt[1].toFixed(4)}</text>`;});
- s+=`<text x="40" y="175" fill="#b9c0d8" font-size="11">Harga $ — ${p.label}</text>`;
- $('chart').innerHTML=s;
-}
-$('detailBtn').onclick=()=>{
- const m=MODES[selMode];const ex=$('detailExtra');
- if(ex.style.display==='block'){ex.style.display='none';$('detailBtn').textContent='LIHAT DETAIL';return;}
- const rate=(m.tot?(m.win/m.tot*100):0).toFixed(1).replace('.',',');
- ex.innerHTML=`Win rate <b>${rate}%</b> (${m.win} menang dari ${m.tot} trade). Saldo awal 1.0000 SOL, sekarang <b>${m.bal.toFixed(4)} SOL</b> (${fmtPct(m.pct)}). ${m.dead?'Mode ini berhenti karena saldo habis — menara runtuh dan tidak bisa diaktifkan lagi sampai saldo di-reset.':'Mode ini masih aktif.'}`;
- ex.style.display='block';$('detailBtn').textContent='TUTUP DETAIL';
-};
-$('chartBtn').onclick=()=>{
- if(!POS.length){toast('Tidak ada posisi terbuka untuk digambar');return;}
- const w=$('chartWrap');const open=w.style.display==='block';
- w.style.display=open?'none':'block';$('chartBtn').textContent=open?'LIHAT CHART':'TUTUP CHART';
- if(!open) drawChart();
-};
-$('towerBtn').onclick=()=>{selMode=(selMode+1)%MODES.length;renderModes();renderMode();toast('Menara: '+MODES[selMode].id+' • '+MODES[selMode].monster);};
-$('enemyBtn').onclick=()=>{selPos=0;renderPos();renderPosDetail();document.querySelector('.panel:nth-of-type(2)')?.scrollIntoView({behavior:'smooth',block:'center'});toast('Musuh $SA — posisi EXCLUSIVE, +2.2%');};
-let notifOn=localStorage.getItem('solbotNotif')==='1';
-function renderWin(){
- const box=$('winList');box.innerHTML='';
- MODES.forEach((m,i)=>{
-  const rate=m.tot?(m.win/m.tot*100):0;
-  const row=document.createElement('div');
-  row.style.cssText='margin:6px 0;cursor:pointer';
-  row.innerHTML=`<div style="display:flex;justify-content:space-between"><span>${m.emoji} ${m.id} — ${m.monster}</span><b style="color:${rate>=33?'#37c978':'#ff6b6b'}">${rate.toFixed(1).replace('.',',')}% (${m.win}/${m.tot})</b></div><div style="background:#232a3d;border-radius:6px;height:10px;margin-top:3px"><div style="width:${rate.toFixed(1)}%;background:${rate>=33?'#37c978':'#ff6b6b'};height:10px;border-radius:6px"></div></div>`;
-  row.onclick=()=>{selMode=i;renderModes();renderMode();document.querySelector('.panel').scrollIntoView({behavior:'smooth'});};
-  box.appendChild(row);
- });
-}
-function renderTrades(){
- const box=$('tradeList');box.innerHTML='';
- TRADES.forEach(t=>{
-  const win=t.pct>=0;
-  const row=document.createElement('div');
-  row.style.cssText='border-bottom:1px solid #232a3d;padding:6px 0';
-  row.innerHTML=`<div style="display:flex;justify-content:space-between"><b>$${t.sym}</b><span style="color:#b9c0d8;font-size:12px">${t.mode} • ${t.res} • ${t.closed}</span></div><div style="display:flex;justify-content:space-between"><span style="color:#b9c0d8">Beli $${t.entry.toFixed(4)} → Jual $${t.exit.toFixed(4)}</span><b style="color:${win?'#37c978':'#ff6b6b'}">${win?'+':''}${t.pct.toFixed(2).replace('.',',')}% (${win?'+':''}${t.pnl.toFixed(4)} SOL)</b></div>`;
-  box.appendChild(row);
- });
-}
-function renderNotif(){
- const b=$('notifBtn');b.classList.toggle('on',notifOn);
- b.textContent=notifOn?'🔔 Notifikasi AKTIF — ketuk untuk mematikan':'🔔 Aktifkan notifikasi di HP ini';
- $('notifChk').checked=notifOn;
-}
-$('notifBtn').onclick=async()=>{
- notifOn=!notifOn;localStorage.setItem('solbotNotif',notifOn?'1':'0');renderNotif();
- if(notifOn&&'Notification' in window){try{await Notification.requestPermission();}catch(e){}}
- toast(notifOn?'Notifikasi diaktifkan di HP ini':'Notifikasi dimatikan');
-};
-function setPaused(p){document.body.classList.toggle('paused',p);$('pauseBtn').textContent=p?'▶':'⏸';$('animChk').checked=!p;}
-$('pauseBtn').onclick=()=>setPaused(!document.body.classList.contains('paused'));
-$('gearBtn').onclick=()=>$('settingsDlg').showModal();
-$('closeDlg').onclick=()=>$('settingsDlg').close();
-$('lockBtn').onclick=()=>{localStorage.removeItem('solbotView');localStorage.removeItem('solbotKey');location.hash='';location.reload();};
-// ---- Data live dari bot (Netlify Functions + Blobs) ----
-function fmtWIB(tsSec){
-  try{return new Date(tsSec*1000).toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).replace('.','');}catch(e){return '—';}
-}
-function fmtAge(openedSec){
-  const mins=Math.max(0,Math.round((Date.now()/1000-openedSec)/60));
-  return Math.floor(mins/60)+' jam '+(mins%60)+' mnt';
-}
-const KIND_EMOJI={sinyal:'📡',beli:'🟢',jual:'🔴',sl:'🔴',info:'ℹ️'};
-async function fetchLive(){
-  if(!viewKey) return;
-  try{
-    const r=await fetch('/api/status?k='+encodeURIComponent(viewKey));
-    if(!r.ok) return;
-    const data=await r.json();
-    if(!data.modes || !Object.keys(data.modes).length) return;
-    let total=0,tw=0,tt=0,tp=0;
-    const livePos=[];
-    MODES.forEach(m=>{
-      const d=data.modes[m.id.toLowerCase()];
-      if(!d) return;
-      m.bal=+(d.eq||0); m.pct=+(((d.eq||0)/(d.start||1)-1)*100).toFixed(1);
-      m.win=d.wins||0; m.tot=d.trades||0; m.pos=d.positions||0;
-      if(d.stopped){m.dead=true;m.status='MATI — STOP saldo habis';}
-      total+=m.bal; tw+=m.win; tt+=m.tot;
-      let vis=0;
-      (d.pos||[]).forEach(p=>{
-        if(HIDDEN_POS.some(h=>h.mode===m.id && (p.symbol||'')===h.symbol)) return;
-        vis++;
-        const entry=p.entry||0, px=p.px||entry;
-        livePos.push({label:`DEMO • ${m.id} — $${p.symbol||'?'}`,pct:+((px/entry-1)*100).toFixed(1),
-          entry:+(entry*1000).toFixed(4),now:+(px*1000).toFixed(4),
-          peak:+(((p.peak||entry)/entry-1)*100).toFixed(1),sl:+(((p.sl||entry)/entry-1)*100).toFixed(1),
-          cap:(p.cost||0)+' SOL',val:(p.value||0)+' SOL',age:fmtAge(p.opened||0),upd:fmtWIB(p.last||p.opened||0),
-          tp1:p.tp?+(p.tp*1000).toFixed(4):null,url:p.url||''});
-      });
-      m.pos=vis;
-    });
-    tp=livePos.length;
-    document.querySelector('.stats').children[0].querySelector('b').textContent=total.toFixed(4)+' SOL';
-    document.querySelector('.stats').children[1].querySelector('b').textContent=tw+' / '+tt;
-    document.querySelector('.stats').children[2].querySelector('b').textContent=String(tp);
-    if(livePos.length){POS.length=0;livePos.forEach(p=>POS.push(p));selPos=0;}
-    $('liveBadge').textContent='• ● LIVE '+fmtWIB(Math.floor(Date.now()/1000));
-    $('liveBadge').style.color='#7ee787';
-    renderModes();renderMode();renderPos();renderPosDetail();renderWin();
-    const er=await fetch('/api/events?k='+encodeURIComponent(viewKey));
-    if(er.ok){
-      const ev=await er.json();
-      if(ev.events && ev.events.length){
-        $('eventList').innerHTML=ev.events.slice(0,5).map(e=>
-          `<div>${KIND_EMOJI[e.kind]||'ℹ️'} <b>[${(e.mode||'').toUpperCase()}]</b> ${e.title.replace(/</g,'&lt;')}<br><span style="color:#b9c0d8;font-size:12px">${fmtWIB(Math.floor((e.ts||0)/1000))}${e.pnl!=null?' • '+(e.pnl>0?'+':'')+e.pnl+'%':''}</span></div>`).join('');
-      }
-    }
-  }catch(e){/* tetap tampilkan data file */}
-}
-$('animChk').onchange=e=>setPaused(!e.target.checked);
-$('notifChk').onchange=e=>{notifOn=e.target.checked;localStorage.setItem('solbotNotif',notifOn?'1':'0');renderNotif();};
-renderModes();renderMode();renderPos();renderPosDetail();renderNotif();renderWin();renderTrades();
-fetchLive();setInterval(fetchLive,60000);
+// Animated 3D ocean, character pose, rod, fish schools, buoy.
+function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();const a=waterGeo.attributes.position;for(let i=0;i<a.count;i++){const x=waterBase[i*3],z=waterBase[i*3+2];a.array[i*3+1]=waterBase[i*3+1]+Math.sin(x*.36+t*1.15)*.10+Math.cos(z*.48+t*.85)*.075+Math.sin((x+z)*.22+t*.6)*.06;}a.needsUpdate=true;waterGeo.computeVertexNormals();
+ woman.position.y=.42+Math.sin(t*1.4)*.025;torso.rotation.z=Math.sin(t*.7)*.012;head.rotation.z=Math.sin(t*.55)*.018;armL.rotation.z=-.48+Math.sin(t*1.1)*.025;armR.rotation.z=.32+Math.sin(t*.9)*.025;rodPivot.rotation.z=-.76+Math.sin(t*.85)*.035;rod.rotation.z=-.10+Math.sin(t*.8)*.018;for(const l of legs)l.rotation.x=Math.sin(t*.65)*.018;
+ // Keep the bobber physically attached to the fishing line and rod tip.
+ const bobberWorld=rodPivot.localToWorld(lineEndLocal.clone());bobberWorld.y=.06+Math.sin(t*2.4)*.075;buoy.position.copy(bobberWorld);buoy.rotation.z=Math.sin(t*2)*.09;
+ const rodTipWorld=rodPivot.localToWorld(new THREE.Vector3(0,5.48,0));fishingLine.geometry.setFromPoints([rodTipWorld,bobberWorld]);fishingLine.geometry.computeBoundingSphere();
+ ring.position.set(bobberWorld.x,.015,bobberWorld.z);ring.scale.setScalar(.8+((t%2)/2)*.8);ring.material.opacity=.5-((t%2)/2)*.4;
+ for(const f of fishGroup.children){const d=f.userData;if(d.baseX===undefined)continue;const speed=d.speed||.5;f.position.x=d.baseX+Math.sin(t*speed+d.phase)*.8;f.position.y=d.baseY+Math.sin(t*1.5+d.phase)*.16;f.position.z=d.baseZ+Math.cos(t*.6+d.phase)*.25;f.rotation.y=Math.sin(t*.6+d.phase)*.18;if(d.tailPivot && d.tailPivot.rotation){d.tailPivot.rotation.y=Math.sin(t*7+d.phase)*.55;}if(d.isPosition){f.position.x+=Math.sin(t*2)*.25;}}
+ lamp.intensity=7.5+Math.sin(t*2.2)*1.2;renderer.render(scene,camera);}
+connect();fetchLive();setInterval(fetchLive,30000);animate();window.__solbot3dStarted=true;const bootStatus=document.getElementById('boot-status');if(bootStatus)bootStatus.hidden=true;
+function fitCamera(){const a=innerWidth/innerHeight;camera.aspect=a;camera.position.set(0,a<0.8?9.4:7.6,a<0.8?24:17.5);camera.lookAt(0,1.45,0);camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));}
+addEventListener('resize',fitCamera);fitCamera();
+
 </script>
-</body>
-</html>
+</body></html>

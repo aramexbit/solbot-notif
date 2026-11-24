@@ -56,7 +56,8 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
   color:#ffe9a8;font-weight:800;font-size:14px;letter-spacing:1px}
 .angler{position:absolute;bottom:44px;font-size:40px;line-height:1;z-index:2}
 .angler .rod{position:absolute;left:24px;bottom:26px;width:3px;height:96px;background:#5a3a1a;
-  transform:rotate(-32deg);transform-origin:bottom center;border-radius:2px}
+  transform:rotate(-32deg);transform-origin:bottom center;border-radius:2px;transition:transform .45s ease}
+#boat.strike .angler.a2 .rod{transform:rotate(-52deg)}
 .angler .line{position:absolute;left:-24px;bottom:96px;width:1px;height:74px;background:#ffffffcc}
 .angler .bobber{position:absolute;left:-28px;bottom:20px;width:11px;height:11px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%,#fff,#ff5a5a 65%);animation:bobber 2.2s ease-in-out infinite}
@@ -68,6 +69,17 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
 #baitGlow{position:absolute;left:50%;top:258px;width:130px;height:130px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#ffd94d55,transparent 70%);animation:glowPulse 2.4s ease-in-out infinite;z-index:3;pointer-events:none}
 @keyframes glowPulse{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(.9)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
 #hook .bait{font-size:15px;margin-left:-6px}
+/* senar dinamis: satu garis dari ujung joran ke kail (SVG), pelampung di permukaan */
+#lineSvg{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}
+#mainLine{fill:none;stroke:rgba(255,255,255,.92);stroke-width:1.6;stroke-linecap:round}
+#floatBob{position:absolute;z-index:6;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#fff,#ff5a5a 55%,#c81e1e);border:2px solid #fff;
+  box-shadow:0 1px 4px #0008;pointer-events:none;display:none;animation:bobber 2.2s ease-in-out infinite}
+/* strip data live */
+#liveStrip{max-width:1180px;margin:0 auto;padding:2px 16px 10px;display:flex;gap:8px;flex-wrap:wrap}
+.ls{background:#0e2238;border:1px solid #2c4a73;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
+.ls .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffb52e;margin-right:6px}
+.ls.live .dot{background:#7ee787;box-shadow:0 0 8px #7ee787}
 /* ikan */
 .fish{position:absolute;left:-10%;z-index:4;cursor:pointer;user-select:none;text-align:center;
   animation:swimR linear infinite;will-change:left}
@@ -146,6 +158,13 @@ footer{max-width:1180px;margin:0 auto;padding:0 16px 26px;font-size:12.5px;color
     <span class="chip blue">🔴 LIVE • data snapshot 18 Nov 2026</span>
   </div>
 </header>
+<div id="liveStrip">
+  <span class="ls" id="lsStatus"><span class="dot"></span><span id="lsStatusTxt">SNAPSHOT • Bot tidak jalan</span></span>
+  <span class="ls">💰 Saldo: <b id="lsEquity">1.0690 SOL (+6,9%)</b></span>
+  <span class="ls">🎣 Posisi terbuka: <b id="lsOpen">0</b></span>
+  <span class="ls">📈 Menang: <b id="lsWins">12/27</b></span>
+  <span class="ls">🕒 Terakhir: <b id="lsLast">SA −0,0178 SOL • 5 Nov</b></span>
+</div>
 <main>
   <section id="scene" aria-label="Laut memancing">
     <div class="sun"></div>
@@ -164,6 +183,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 16px 26px;font-size:12.5px;color
     </div>
     <div id="hook">🪝<span class="bait">🪱</span></div>
     <div id="baitGlow"></div>
+    <svg id="lineSvg"><path id="mainLine" d=""/></svg>
+    <div id="floatBob"></div>
     <div class="seabed"></div>
     <div class="deco" style="left:48%">🪸</div>
     <div class="deco" style="left:64%;font-size:22px">🐚</div>
@@ -198,6 +219,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 16px 26px;font-size:12.5px;color
   Profit terbesar: CATBOT +0,0624 SOL dan Foxii +0,0462 SOL. Ikan di laut = 26 token dari riwayat bot — token yang lolos
   filter dan pernah dibeli; saat bot jalan live, ikan di laut akan diisi watchlist asli (maks 3 token, kedaluwarsa 6 jam).
   Data baru = ganti file itu saja, halaman tidak perlu diubah. Halaman ini permainan visualisasi — bukan trading asli.
+  v3: senar dinamis dari ujung joran ke kail (kendur saat menunggu, tegang + joran melengkung saat strike) + strip data
+  live di atas; strip menampilkan SNAPSHOT sampai backend live aktif.
 </footer>
 <script>
 // ======== DATA ASLI mode Easy (snapshot 18 Nov 2026, 27 trade, menang 12/27) ========
@@ -340,6 +363,73 @@ function resetHook(){
   setTimeout(()=>{ hook.style.left='50%'; hook.style.top='258px'; },700);
 }
 
+// ======== SENAR DINAMIS (ujung joran -> kail, selalu tersambung) ========
+// referensi video YouTube (Natural Hobi, mancing wader): senar satu garis kontinu
+// reel -> joran -> pelampung di permukaan -> tegak lurus ke kail; menunggu = agak
+// kendur (sag), strike = tegang + joran melengkung.
+const boatEl=document.getElementById('boat');
+const linePath=document.getElementById('mainLine');
+const floatBob=document.getElementById('floatBob');
+const rodTipEl=document.querySelector('#boat .a2 .rod');
+function setStrike(on){ boatEl.classList.toggle('strike',on); }
+function syncLine(){
+  const s=scene.getBoundingClientRect();
+  const rr=rodTipEl.getBoundingClientRect();
+  const hr=hook.getBoundingClientRect();
+  // ujung joran = sudut kiri-atas kotak rod (joran miring -32°)
+  const x1=rr.left-s.left+2, y1=rr.top-s.top+2;
+  // titik ikat = atas kail
+  const x2=hr.left-s.left+hr.width/2, y2=hr.top-s.top+3;
+  const sag=busy?0:16;
+  const mx=(x1+x2)/2, my=(y1+y2)/2+sag;
+  linePath.setAttribute('d',`M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`);
+  // pelampung di permukaan air (y=34% scene), di sepanjang kurva senar
+  const surfY=s.height*0.34;
+  if(y2>surfY+8 && y1<surfY){
+    const t=(surfY-y1)/(y2-y1);
+    const qx=(1-t)*(1-t)*x1+2*(1-t)*t*mx+t*t*x2;
+    floatBob.style.display='block';
+    floatBob.style.left=qx.toFixed(1)+'px'; floatBob.style.top=surfY.toFixed(1)+'px';
+  }else{
+    floatBob.style.display='none';
+  }
+}
+setInterval(syncLine,50);
+
+// ======== STRIP DATA LIVE ========
+function updateStrip(d){
+  const eq=d&&d.equity!=null?d.equity:1.069044;
+  const st=d&&d.start_sol?d.start_sol:1;
+  const pct=((eq/st)-1)*100;
+  $('lsEquity').textContent=eq.toFixed(4)+' SOL ('+(pct>=0?'+':'')+pct.toFixed(1).replace('.',',')+'%)';
+  const wins=d&&d.wins!=null?d.wins:12, tot=d&&d.trades_total!=null?d.trades_total:27;
+  $('lsWins').textContent=wins+'/'+tot;
+  $('lsOpen').textContent='0';
+  const src=(d&&d.fish&&d.fish.length?d.fish:FISH.map(f=>({sym:f.sym,pnl_sol:f.sol,last_day:''})));
+  let last=null;
+  src.forEach(f=>{ const day=f.last_day||''; if(day && (!last || day>last.last_day)) last=f; });
+  if(last){
+    const m=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    const p=last.last_day.split('-');
+    $('lsLast').textContent=`${last.sym} ${fmtSol(last.pnl_sol)} • ${parseInt(p[2],10)} ${m[parseInt(p[1],10)-1]}`;
+  }
+}
+function tryLiveUpdate(){
+  fetch('/api/status').then(r=>r.ok?r.json():null).then(d=>{
+    if(!d) return;
+    let applied=false;
+    if(d.equity!=null){ $('lsEquity').textContent=Number(d.equity).toFixed(4)+' SOL'; applied=true; }
+    if(Array.isArray(d.positions)){ $('lsOpen').textContent=d.positions.length; applied=true; }
+    if(d.last_event){ $('lsLast').textContent=d.last_event; applied=true; }
+    if(applied){
+      $('lsStatusTxt').textContent='● LIVE • Bot jalan';
+      document.getElementById('lsStatus').classList.add('live');
+    }
+  }).catch(()=>{});
+}
+tryLiveUpdate();
+setInterval(tryLiveUpdate,30000);
+
 // ======== MANCING ========
 function freezeFish(el){
   const p=scenePos(el);
@@ -359,6 +449,7 @@ function castFish(f,el){
     if(!el.isConnected){busy=false;resetHook();return;}
     const q=freezeFish(el);
     el.classList.add('hooked');
+    setStrike(true);
     moveHook(q.x,q.y-16);
     fx('💦',q.x-10,q.y-24,'splash');
     setTimeout(()=>outcome(f,el),900);
@@ -376,7 +467,8 @@ function outcome(f,el){
     fx('🎯 SELL',bp.x-40,bp.y-20,'float-txt profit');
     showToast(`🎣 ${f.sym} makan umpan! Ditarik naik ke order SELL...`);
     setTimeout(()=>{
-      if(!el.isConnected){busy=false;resetHook();return;}
+      if(!el.isConnected){setStrike(false);busy=false;resetHook();return;}
+      setStrike(false);
       fx(fmtSol(f.sol)+' 🎉',bp.x-70,bp.y-64,'float-txt profit');
       showToast(`🎉 ${f.sym} TERJUAL! Profit ${fmtSol(f.sol)} — ikan sampai ke kapal!`);
       f.done=true; caught++; sessionSol+=(f.sol||0); setScore(); markRow(f.sym,'caught-now');
@@ -388,7 +480,8 @@ function outcome(f,el){
     el.style.top=(p.top-60)+'px';
     showToast(`🎣 ${f.sym} makan umpan! Ditarik naik...`);
     setTimeout(()=>{
-      if(!el.isConnected){busy=false;resetHook();return;}
+      if(!el.isConnected){setStrike(false);busy=false;resetHook();return;}
+      setStrike(false);
       fx('💥 TALI PUTUS!',p.x-70,p.y-60,'burst');
       fx('💦',p.x-10,p.y-20,'splash');
       const dir=Math.random()<0.5?-1:1;
@@ -404,7 +497,7 @@ function outcome(f,el){
     // hanya dipantau: gigit lalu lepas
     fx('💭',p.x+10,p.y-40,'splash');
     showToast(`👀 ${f.sym} hanya dipantau bot — belum dibeli, ikan dilepas lagi.`);
-    setTimeout(()=>{ el.remove(); respawn(f.sym,600); busy=false; resetHook(); },700);
+    setTimeout(()=>{ setStrike(false); el.remove(); respawn(f.sym,600); busy=false; resetHook(); },700);
   }
 }
 
@@ -433,7 +526,7 @@ function setPlaying(on){
 }
 $('playBtn').addEventListener('click',()=>setPlaying(!playing));
 $('resetBtn').addEventListener('click',()=>{
-  caught=0; escaped=0; sessionSol=0; FISH.forEach(f=>f.done=false); setScore();
+  caught=0; escaped=0; sessionSol=0; setStrike(false); FISH.forEach(f=>f.done=false); setScore();
   fishLayer.innerHTML=''; FISH.forEach(spawnFish);
   document.querySelectorAll('.row').forEach(r=>r.classList.remove('caught-now','escaped-now'));
   showToast('🔄 Laut di-reset — semua ikan kembali berenang!');
@@ -449,7 +542,7 @@ function applyData(d){
     result:f.result, pct:f.pct, sol:f.pnl_sol, note:f.note||''
   }));
   FISH.sort((a,b)=>(b.sol??0)-(a.sol??0));
-  renderBoard(); setScore();
+  renderBoard(); setScore(); updateStrip(d);
   fishLayer.innerHTML=''; FISH.forEach(spawnFish);
   if(d.equity!=null && d.start_sol){
     $('saldoChip').textContent='Saldo '+Number(d.equity).toFixed(4)+' SOL (+'+(((d.equity/d.start_sol)-1)*100).toFixed(1).replace('.',',')+'%)';
@@ -462,6 +555,7 @@ function applyData(d){
 }
 renderBoard();
 setScore();
+updateStrip(null);
 showToast('👋 Ikan-ikan itu token lolos filter yang mengerumuni umpan — klik satu ikan untuk membeli, atau tekan MULAI MANCING!');
 fetch('memancing-data.json').then(r=>r.ok?r.json():null).then(d=>{
   if(applyData(d)) showToast('📄 Data baru dimuat dari memancing-data.json');

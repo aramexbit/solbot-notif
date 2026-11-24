@@ -159,7 +159,7 @@ dialog label{display:block;font-size:13px;margin:10px 0}
 
 <button class="btn" id="notifBtn" style="margin-top:14px">🔔 Aktifkan notifikasi di HP ini</button>
 
-<p class="note">Halaman ini terkunci dengan kunci tampilan — buka lewat link yang berisi kunci, atau masukkan kuncinya di layar kunci. Kunci aslinya tidak tersimpan di kode situs, hanya hash-nya yang dicek di browser; ini gerbang tampilan, bukan pengaman server. Data DEMO dari file bot SolBot-CMD per 18 Nov 2026 00:47 WIB (modes/*/data/state_paper.json + status.json) — bukan data live. Posisi $SA (EXCLUSIVE) dihapus dari tampilan atas permintaan pengguna — itu posisi lama, harganya terakhir diperbarui di file bot pada 04 Nov 22:51. Dua posisi $SA lain (EASY, MEDIUM) sudah ditutup 05 Nov 14:06 kena SL. Total nyata: 3.3373 SOL, Menang 102/309. Situs ini sekarang live: bot mengirim status ke /api/status &amp; peristiwa ke /api/events (Netlify Functions, kunci bot dicek di server), halaman mengambilnya tiap 60 detik; kunci tampilan juga dicek server untuk data live. Kalau backend belum ada datanya, halaman memakai data file bot per 18 Nov 2026 00:47 WIB. Tombol notifikasi hanya status demo di HP ini (localStorage + izin notifikasi browser); notifikasi bot aslinya lewat Netlify, Telegram di file ini kosong (tidak aktif).</p>
+<p class="note">Halaman ini terkunci dengan kunci tampilan — buka lewat link yang berisi kunci, atau masukkan kuncinya di layar kunci. Kunci aslinya tidak tersimpan di kode situs, hanya hash-nya yang dicek di browser; ini gerbang tampilan, bukan pengaman server. Data DEMO dari file bot SolBot-CMD per 18 Nov 2026 00:47 WIB (modes/*/data/state_paper.json + status.json) — bukan data live. Posisi $SA (EXCLUSIVE) dihapus dari tampilan atas permintaan pengguna — itu posisi lama, harganya terakhir diperbarui di file bot pada 04 Nov 22:51. Dua posisi $SA lain (EASY, MEDIUM) sudah ditutup 05 Nov 14:06 kena SL. Total nyata: 3.3373 SOL, Menang 102/309. Situs ini sekarang live: bot mengirim status ke /api/status &amp; peristiwa ke /api/events (Netlify Functions, kunci bot dicek di server), halaman mengambilnya tiap 60 detik; kunci tampilan juga dicek server untuk data live. Kalau backend belum ada datanya, halaman memakai data file bot per 18 Nov 2026 00:47 WIB. Tombol notifikasi hanya status demo di HP ini (localStorage + izin notifikasi browser); notifikasi bot aslinya lewat Netlify, Telegram di file ini kosong (tidak aktif). Mode DEMO-EASY (demo, beli 25%/trade, tanpa minimal $5) tampil sebagai kios ke-6; notifikasinya masuk begitu backend baru tayang.</p>
 </div>
 
 <dialog id="settingsDlg">
@@ -180,6 +180,7 @@ const MODES=[
  {id:'HARD',monster:'Buto Ijo',emoji:'👹',bal:0.1190,pct:-88.1,win:46,tot:146,pos:0,status:'MATI — STOP saldo habis',dead:true},
  {id:'EXCLUSIVE',monster:'Genderuwo',emoji:'🦍',bal:0.6787,pct:-32.1,win:27,tot:74,pos:0,status:'AKTIF',dead:false},
  {id:'NARASI',monster:'Kuntilanak',emoji:'👩‍🦰',bal:0.5247,pct:-47.5,win:15,tot:51,pos:0,status:'AKTIF',dead:false},
+ {id:'DEMO-EASY',monster:'Jenglot',emoji:'🧟',bal:1.0000,pct:0,win:0,tot:0,pos:0,status:'AKTIF',dead:false},
 ];
 const POS=[];
 const HIDDEN_POS=[{mode:'EXCLUSIVE',symbol:'SA'}]; // posisi $SA dihapus atas permintaan pengguna (posisi lama) — jangan tampilkan lagi, termasuk dari data live
@@ -240,7 +241,7 @@ function fmtPct(v){return (v>0?'+':'')+v.toFixed(1).replace('.',',')+'%'}
 function renderKiosks(){
  const box=$('kiosks');box.innerHTML='';
  MODES.forEach((m,i)=>{
-  const rate=(m.win/m.tot*100);
+  const rate=m.tot?(m.win/m.tot*100):0;
   const b=document.createElement('button');
   b.className='kiosk'+(m.dead?' dead':'');
   b.setAttribute('aria-pressed',i===selMode?'true':'false');
@@ -342,7 +343,7 @@ function drawTradeChart(t){
 $('detailBtn').onclick=()=>{
  const m=MODES[selMode];const ex=$('detailExtra');
  if(ex.style.display==='block'){ex.style.display='none';$('detailBtn').textContent='LIHAT DETAIL';return;}
- const rate=(m.win/m.tot*100).toFixed(1).replace('.',',');
+ const rate=(m.tot?(m.win/m.tot*100):0).toFixed(1).replace('.',',');
  ex.innerHTML=`Win rate <b>${rate}%</b> (${m.win} menang dari ${m.tot} trade). Saldo awal 1.0000 SOL, sekarang <b>${m.bal.toFixed(4)} SOL</b> (${fmtPct(m.pct)}). ${m.dead?'Kios ini TUTUP karena saldo habis — tirai diturunkan dan tidak bisa dipilih lagi sampai saldo di-reset.':'Kios ini masih buka.'}`;
  ex.style.display='block';$('detailBtn').textContent='TUTUP DETAIL';
 };
@@ -355,7 +356,7 @@ $('chartBtn').onclick=()=>{
 function renderWin(){
  const box=$('winList');box.innerHTML='';
  MODES.forEach((m,i)=>{
-  const rate=(m.win/m.tot*100);
+  const rate=m.tot?(m.win/m.tot*100):0;
   const row=document.createElement('div');
   row.style.cssText='margin:6px 0;cursor:pointer';
   row.innerHTML=`<div style="display:flex;justify-content:space-between"><span>${m.emoji} ${m.id} — ${m.monster}</span><b style="color:${rate>=33?'#37c978':'#ff6b6b'}">${rate.toFixed(1).replace('.',',')}% (${m.win}/${m.tot})</b></div><div style="background:#171226;border-radius:6px;height:10px;margin-top:3px"><div style="width:${rate.toFixed(1)}%;background:${rate>=33?'#37c978':'#ff6b6b'};height:10px;border-radius:6px"></div></div>`;

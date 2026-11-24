@@ -55,9 +55,9 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
 .angler .hat{position:absolute;top:-5px;left:50%;width:30px;height:13px;margin-left:-15px;background:var(--hat);border-radius:50% 50% 0 0/100% 100% 0 0}
 .angler .hat::after{content:"";position:absolute;left:-5px;right:-5px;bottom:-2px;height:5px;background:var(--hat);border-radius:50%}
 .angler .body{position:absolute;top:26px;left:50%;width:32px;height:36px;margin-left:-16px;background:var(--shirt);border-radius:12px 12px 6px 6px}
-.angler .arm{position:absolute;top:27px;width:8px;height:26px;border-radius:4px;background:var(--shirt);filter:brightness(.8);transform-origin:top center}
-.angler .arm.left{left:6px;transform:rotate(37deg)}
-.angler .arm.right{left:32px;transform:rotate(-37deg)}
+.angler .arm{position:absolute;top:27px;width:8px;height:28px;border-radius:4px;background:var(--shirt);filter:brightness(.8);transform-origin:top center}
+.angler .arm.left{left:6px;transform:rotate(-40deg)}
+.angler .arm.right{left:32px;transform:rotate(40deg)}
 .angler .hand{position:absolute;left:20px;top:42px;width:9px;height:9px;border-radius:50%;background:var(--skin);z-index:3}
 .angler .hand.low{left:19px;top:51px}
 .angler .rod{position:absolute;left:24px;bottom:26px;width:3px;height:96px;background:#5a3a1a;
@@ -225,7 +225,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 16px 26px;font-size:12.5px;color
   0 trade, saldo 1.0000 SOL dari modal 1 SOL. Scan terakhir: 76 token, 6 lolos filter pasar.
   Halaman ini LIVE: memuat ulang memancing-data.json tiap 30 detik — bila bot membeli, ikan otomatis ditarik
   naik sampai SELL; bila kena SL, tali putus. Riwayat lama (27 trade, saldo 1.0690 SOL) ada di snapshot 18 Nov 2026.
-  v4: data sesuai keadaan sekarang + live tanpa klik MULAI (senar dinamis v3 tetap: kendur saat menunggu, tegang +
+  v4.3: data sesuai keadaan sekarang + live tanpa klik MULAI (senar dinamis v3 tetap: kendur saat menunggu, tegang +
   joran melengkung saat strike).
 </footer>
 <script>

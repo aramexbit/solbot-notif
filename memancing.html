@@ -18,7 +18,7 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
 @media(max-width:900px){main{grid-template-columns:1fr}}
 /* ======== SCENE LAUT ======== */
 #scene{position:relative;height:560px;border-radius:18px;overflow:hidden;border:2px solid #2c4a73;
-  background:linear-gradient(180deg,#79c6f5 0%,#b5e6ff 32%,#1b7fb8 34%,#0d5a8a 62%,#083a5e 100%);
+  background:linear-gradient(180deg,#79c6f5 0%,#b5e6ff 32%,#1b7fb8 34%,#0d5a8a 62%,#0a4a78 100%);
   box-shadow:0 10px 30px #0008}
 .sun{position:absolute;top:26px;right:44px;width:64px;height:64px;border-radius:50%;
   background:radial-gradient(circle,#fff8c9,#ffd94d 60%,#ffb52e);box-shadow:0 0 44px 14px #ffd94d88}
@@ -67,12 +67,12 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
   transition:left .8s ease-in,top .8s ease-in;filter:drop-shadow(0 2px 3px #0008)}
 #hook .bait{font-size:15px;margin-left:-6px}
 /* ikan */
-.fish{position:absolute;left:-15%;z-index:4;cursor:pointer;user-select:none;text-align:center;
+.fish{position:absolute;left:-10%;z-index:4;cursor:pointer;user-select:none;text-align:center;
   animation:swimR linear infinite;will-change:left}
 .fish.flip{animation-name:swimL}
 .fish.flip .fbody{display:inline-block;transform:scaleX(-1)}
-@keyframes swimR{from{left:-16%}to{left:106%}}
-@keyframes swimL{from{left:106%}to{left:-16%}}
+@keyframes swimR{from{left:-10%}to{left:94%}}
+@keyframes swimL{from{left:94%}to{left:-10%}}
 .fish .tag{display:block;font-size:12px;font-weight:800;color:#fff;background:#0b2a4acc;
   border:1px solid #ffffff66;border-radius:999px;padding:1px 8px;margin-bottom:1px;white-space:nowrap}
 .fish .tag i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;font-style:normal}
@@ -85,6 +85,10 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
   background:radial-gradient(circle at 30% 30%,#ffffffcc,#ffffff22);
   animation:rise linear infinite;z-index:3}
 @keyframes rise{from{transform:translateY(0);opacity:0}15%{opacity:.8}to{transform:translateY(-420px);opacity:0}}
+.seabed{position:absolute;left:-4%;right:-4%;bottom:-14px;height:66px;z-index:2;
+  background:linear-gradient(180deg,#e8c88f,#b98d4f 70%,#9a7439);
+  border-radius:50% 50% 0 0/100% 100% 0 0;box-shadow:0 -4px 18px #0005}
+.deco{position:absolute;bottom:16px;z-index:2;font-size:30px;filter:drop-shadow(0 2px 3px #0006)}
 .splash{position:absolute;z-index:9;font-size:26px;pointer-events:none;animation:splashUp .9s ease-out forwards}
 @keyframes splashUp{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-46px) scale(1.3);opacity:0}}
 .float-txt{position:absolute;z-index:10;font-weight:900;font-size:20px;pointer-events:none;
@@ -97,7 +101,7 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
 /* HUD */
 #hud{position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:8px;flex-wrap:wrap}
 #hud .chip{background:#0b2a4add;border:1px solid #ffffff44;color:#fff}
-#toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:11;max-width:92%;
+#toast{position:absolute;right:12px;bottom:14px;z-index:11;max-width:46%;pointer-events:none;
   background:#0b2a4ae6;border:1px solid #ffd94d88;border-radius:12px;padding:8px 14px;font-size:14px;
   font-weight:600;display:none;text-align:center}
 /* ======== PAPAN HASIL ======== */
@@ -153,6 +157,11 @@ footer{max-width:1180px;margin:0 auto;padding:0 16px 26px;font-size:12.5px;color
       <div class="hull"></div>
     </div>
     <div id="hook">🪝<span class="bait">🪱</span></div>
+    <div class="seabed"></div>
+    <div class="deco" style="left:5%">🪸</div>
+    <div class="deco" style="left:22%;font-size:22px">🐚</div>
+    <div class="deco" style="left:78%">🌿</div>
+    <div class="deco" style="left:90%;font-size:24px">⭐</div>
     <div id="fishLayer"></div>
     <div id="fxLayer"></div>
     <div id="hud">
@@ -240,7 +249,7 @@ function markRow(sym,cls){
 function setScore(){
   $('caught').textContent=caught; $('caught2').textContent=caught;
   $('escaped').textContent=escaped; $('escaped2').textContent=escaped;
-  $('watching').textContent=FISH.length;
+  $('watching').textContent=FISH.filter(f=>!f.done).length;
 }
 function showToast(msg){
   toastEl.textContent=msg; toastEl.style.display='block';
@@ -249,11 +258,12 @@ function showToast(msg){
 }
 
 // ======== IKAN BERENANG ========
-function spawnFish(f){
+function spawnFish(f,i){
   const el=document.createElement('div');
   el.className='fish'+(Math.random()<0.4?' flip':'');
   el.dataset.sym=f.sym;
-  el.style.top=(42+Math.random()*46).toFixed(1)+'%';
+  const lane=(typeof i==='number'?i:FISH.indexOf(f))%11;
+  el.style.top=(42+lane*4.2+Math.random()*2).toFixed(1)+'%';
   el.style.animationDuration=(20+Math.random()*20).toFixed(1)+'s';
   el.style.animationDelay=(-Math.random()*30).toFixed(1)+'s';
   el.innerHTML=`<span class="tag"><i style="background:${dotColor(f)}"></i>${f.sym}</span>
@@ -335,8 +345,8 @@ function outcome(f,el){
     fx('💦',p.x-16,p.y-20,'splash'); fx('💦',p.x+8,p.y-30,'splash');
     fx(`+${f.pct.toFixed(1).replace('.',',')}% PROFIT 🎉`,p.x-60,p.y-70,'float-txt profit');
     showToast(`🎉 ${f.sym} DITANGKAP! Profit +${f.pct.toFixed(1).replace('.',',')}% — ikan naik ke kapal!`);
-    caught++; setScore(); markRow(f.sym,'caught-now');
-    setTimeout(()=>{ el.remove(); respawn(f.sym,1200); busy=false; resetHook(); },1400);
+    f.done=true; caught++; setScore(); markRow(f.sym,'caught-now');
+    setTimeout(()=>{ el.remove(); busy=false; resetHook(); },1400);
   }else if(f.result==='lose'){
     // tali PUTUS, ikan kabur
     fx('💥 TALI PUTUS!',p.x-70,p.y-60,'burst');
@@ -346,8 +356,8 @@ function outcome(f,el){
     el.style.left=(dir<0?'-18%':'118%');
     el.style.top=(parseFloat(el.style.top)+ (Math.random()*10-14))+'%';
     showToast(`💨 ${f.sym} LOLOS! Tali putus — ikan kabur ${f.pct.toFixed(1).replace('.',',')}%!`);
-    escaped++; setScore(); markRow(f.sym,'escaped-now');
-    setTimeout(()=>{ el.remove(); respawn(f.sym,1500); busy=false; resetHook(); },1100);
+    f.done=true; escaped++; setScore(); markRow(f.sym,'escaped-now');
+    setTimeout(()=>{ el.remove(); busy=false; resetHook(); },1100);
   }else{
     // hanya dipantau: gigit lalu lepas
     fx('💭',p.x+10,p.y-40,'splash');
@@ -361,12 +371,14 @@ function autoCast(){
   if(busy || !playing) return;
   const swimmers=[...fishLayer.querySelectorAll('.fish')];
   if(!swimmers.length) return;
-  // 45% peluang pilih ikan yang ada hasil (GTA/SA/RICO) supaya aksinya kelihatan
+  // bila semua ikan profit/lose sudah diproses, berhenti
   const stars=swimmers.filter(e=>{
     const f=FISH.find(x=>x.sym===e.dataset.sym);
     return f && f.result!=='watch';
   });
-  const pool=(stars.length && Math.random()<0.45)?stars:swimmers;
+  if(!stars.length){ setPlaying(false); showToast('🎉 Semua ikan sudah diproses — tekan ULANG untuk main lagi!'); return; }
+  // 45% peluang pilih ikan yang ada hasil supaya aksinya kelihatan
+  const pool=(Math.random()<0.45)?stars:swimmers;
   const el=pool[Math.floor(Math.random()*pool.length)];
   const f=FISH.find(x=>x.sym===el.dataset.sym);
   castFish(f,el);
@@ -379,7 +391,7 @@ function setPlaying(on){
 }
 $('playBtn').addEventListener('click',()=>setPlaying(!playing));
 $('resetBtn').addEventListener('click',()=>{
-  caught=0; escaped=0; setScore();
+  caught=0; escaped=0; FISH.forEach(f=>f.done=false); setScore();
   fishLayer.innerHTML=''; FISH.forEach(spawnFish);
   document.querySelectorAll('.row').forEach(r=>r.classList.remove('caught-now','escaped-now'));
   showToast('🔄 Laut di-reset — semua ikan kembali berenang!');

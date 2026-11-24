@@ -73,10 +73,12 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
 .fish.flip .fbody{display:inline-block;transform:scaleX(-1)}
 @keyframes swimR{from{left:-10%}to{left:94%}}
 @keyframes swimL{from{left:94%}to{left:-10%}}
-.fish .tag{display:block;font-size:12px;font-weight:800;color:#fff;background:#0b2a4acc;
-  border:1px solid #ffffff66;border-radius:999px;padding:1px 8px;margin-bottom:1px;white-space:nowrap}
+.fish .tag{display:block;font-size:11px;font-weight:800;color:#fff;background:#0b2a4acc;
+  border:1px solid #ffffff66;border-radius:999px;padding:1px 8px;margin-bottom:1px;white-space:nowrap;
+  transition:opacity .3s}
+.fish.edge .tag{opacity:0}
 .fish .tag i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;font-style:normal}
-.fish .fbody{font-size:36px;line-height:1;filter:drop-shadow(0 3px 4px #0007)}
+.fish .fbody{font-size:30px;line-height:1;filter:drop-shadow(0 3px 4px #0007)}
 .fish:hover .tag{background:#ffd94d;color:#3a2400}
 .fish.hooked{animation:none !important;z-index:8;transition:left .5s ease,top .5s ease,transform .5s ease}
 .fish.reeling{transition:top 1.1s ease-in,left 1.1s ease,transform 1.1s ease}
@@ -88,7 +90,7 @@ main{max-width:1180px;margin:0 auto;padding:8px 16px 20px;display:grid;grid-temp
 .seabed{position:absolute;left:-4%;right:-4%;bottom:-14px;height:66px;z-index:2;
   background:linear-gradient(180deg,#e8c88f,#b98d4f 70%,#9a7439);
   border-radius:50% 50% 0 0/100% 100% 0 0;box-shadow:0 -4px 18px #0005}
-.deco{position:absolute;bottom:16px;z-index:2;font-size:30px;filter:drop-shadow(0 2px 3px #0006)}
+.deco{position:absolute;bottom:44px;z-index:2;font-size:30px;filter:drop-shadow(0 2px 3px #0006)}
 .splash{position:absolute;z-index:9;font-size:26px;pointer-events:none;animation:splashUp .9s ease-out forwards}
 @keyframes splashUp{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-46px) scale(1.3);opacity:0}}
 .float-txt{position:absolute;z-index:10;font-weight:900;font-size:20px;pointer-events:none;
@@ -158,10 +160,10 @@ footer{max-width:1180px;margin:0 auto;padding:0 16px 26px;font-size:12.5px;color
     </div>
     <div id="hook">🪝<span class="bait">🪱</span></div>
     <div class="seabed"></div>
-    <div class="deco" style="left:5%">🪸</div>
-    <div class="deco" style="left:22%;font-size:22px">🐚</div>
-    <div class="deco" style="left:78%">🌿</div>
-    <div class="deco" style="left:90%;font-size:24px">⭐</div>
+    <div class="deco" style="left:48%">🪸</div>
+    <div class="deco" style="left:64%;font-size:22px">🐚</div>
+    <div class="deco" style="left:80%">🌿</div>
+    <div class="deco" style="left:92%;font-size:24px">⭐</div>
     <div id="fishLayer"></div>
     <div id="fxLayer"></div>
     <div id="hud">
@@ -260,12 +262,16 @@ function showToast(msg){
 // ======== IKAN BERENANG ========
 function spawnFish(f,i){
   const el=document.createElement('div');
-  el.className='fish'+(Math.random()<0.4?' flip':'');
+  // satu baris = satu kecepatan + satu arah, fase tersebar rata -> ikan sebaris tidak pernah bersalipan
+  const idx=(typeof i==='number'?i:FISH.indexOf(f));
+  const row=idx%5, k=Math.floor(idx/5);
+  const inRow=Math.floor((FISH.length-1-row)/5)+1;
+  const dur=30+row*4;
+  el.className='fish'+(row%2===1?' flip':'');
   el.dataset.sym=f.sym;
-  const lane=(typeof i==='number'?i:FISH.indexOf(f))%5;
-  el.style.top=(44+lane*10+Math.random()*2).toFixed(1)+'%';
-  el.style.animationDuration=(20+Math.random()*20).toFixed(1)+'s';
-  el.style.animationDelay=(-Math.random()*30).toFixed(1)+'s';
+  el.style.top=(44+row*10+Math.random()*2).toFixed(1)+'%';
+  el.style.animationDuration=dur+'s';
+  el.style.animationDelay=(-(k*dur/inRow)).toFixed(1)+'s';
   el.innerHTML=`<span class="tag"><i style="background:${dotColor(f)}"></i>${f.sym}</span>
     <span class="fbody" style="filter:hue-rotate(${f.hue}deg)">${f.emoji}</span>`;
   el.addEventListener('click',()=>castFish(f,el));
@@ -279,6 +285,16 @@ function respawn(sym,delay=400){
   },delay);
 }
 FISH.forEach(spawnFish);
+
+// sembunyikan label saat ikan dekat tepi laut (label terpotong terlihat seperti bug;
+// badan ikan yang setengah terlihat di tepi itu wajar — ikan sedang masuk/keluar)
+setInterval(()=>{
+  const sr=scene.getBoundingClientRect();
+  document.querySelectorAll('#fishLayer .fish').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    el.classList.toggle('edge', r.left<sr.left+46 || r.right>sr.right-46);
+  });
+},400);
 
 // gelembung
 for(let i=0;i<10;i++){

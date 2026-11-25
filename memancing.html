@@ -407,18 +407,44 @@ function updateStrip(d){
   const sub=document.getElementById('boardSub');
   if(sub) sub.innerHTML=`Mode Easy • Demo • ${tot} trade • Menang ${wins}/${tot} • Saldo awal ${st} SOL • Bersih <b>${fmtSol(eq-st)}</b> • <span id="dataUpdated">Data: ${d&&d.updated?d.updated:'25 Nov 2026 04:19 WIB'}</span>`;
 }
+function applyLiveStatus(m){
+  if(!m) return;
+  let applied=false;
+  if(m.eq!=null){ const e=$('lsEquity'); if(e){e.textContent=Number(m.eq).toFixed(4)+' SOL'; applied=true;} }
+  if(Array.isArray(m.pos)){ const o=$('lsOpen'); if(o){o.textContent=m.pos.length; applied=true;} }
+  if(m.eq!=null && m.start){
+    const pc=((m.eq/m.start)-1)*100;
+    const sc=$('saldoChip'); if(sc) sc.textContent='Saldo '+Number(m.eq).toFixed(4)+' SOL ('+(pc>=0?'+':'')+pc.toFixed(1).replace('.',',')+'%)';
+  }
+  if(m.wins!=null && m.trades!=null){
+    const wc=$('winChip'); if(wc) wc.textContent='Menang '+m.wins+' / '+m.trades+' trade';
+  }
+  if(!busy){
+    const livePos=Array.isArray(m.pos)?m.pos:[];
+    if(livePos.length){
+      const kept=FISH.filter(f=>f.result!=='open');
+      livePos.forEach((p,i)=>{
+        kept.push({sym:p.symbol,emoji:'🐟',hue:((kept.length+i)*47)%360,result:'open',
+          pct:(p.pnl!=null?Number(p.pnl):null),
+          sol:((p.value||0)-(p.cost||0))||null,note:'',
+          score:null,top10:null,lp:null,price:(p.px??null),zone_low:null,zone_high:null,
+          held:false,done:false});
+      });
+      FISH=kept; renderBoard(); setScore(); syncFish();
+    }
+  }
+  if(m.ts){ const du=$('dataUpdated'); if(du) du.textContent='Data: '+new Date(m.ts).toLocaleTimeString(); }
+  if(applied){
+    backendLive=true;
+    $('lsStatusTxt').textContent='● LIVE • Bot jalan';
+    document.getElementById('lsStatus').classList.add('live');
+  }
+}
 function tryLiveUpdate(){
   fetch('/api/status').then(r=>r.ok?r.json():null).then(d=>{
-    if(!d) return;
-    let applied=false;
-    if(d.equity!=null){ $('lsEquity').textContent=Number(d.equity).toFixed(4)+' SOL'; applied=true; }
-    if(Array.isArray(d.positions)){ $('lsOpen').textContent=d.positions.length; applied=true; }
-    if(d.last_event){ $('lsLast').textContent=d.last_event; applied=true; }
-    if(applied){
-      backendLive=true;
-      $('lsStatusTxt').textContent='● LIVE • Bot jalan';
-      document.getElementById('lsStatus').classList.add('live');
-    }
+    if(!d||!d.modes) return;
+    const m=d.modes['demo-easy']||d.modes[Object.keys(d.modes)[0]];
+    if(m) applyLiveStatus(m);
   }).catch(()=>{});
 }
 tryLiveUpdate();
@@ -556,6 +582,9 @@ function pollData(){
     }else{
       syncFish(); // coba lagi animasi trade yang sempat tertunda karena busy
     }
+    fetch('/api/status').then(r=>r.ok?r.json():null).then(dd=>{
+      if(dd&&dd.modes){ const mm=dd.modes['demo-easy']||dd.modes[Object.keys(dd.modes)[0]]; if(mm) applyLiveStatus(mm); }
+    }).catch(()=>{});
   }).catch(()=>{});
 }
 

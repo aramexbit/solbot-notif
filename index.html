@@ -54,7 +54,7 @@ window.SOLBOT_CONFIG = {
     <div id="scene-wrap"><canvas id="world"></canvas></div>
     <header class="topbar">
       <div class="brand"><div class="brand-fish">🐟</div><div><strong>SolBot <em>Fishing</em></strong><small>TRADE • CATCH • PROFIT</small></div></div>
-      <div class="metric"><span>DEMO BALANCE</span><b id="balance">— SOL</b><small id="balanceUsd">Awaiting bot data</small></div>
+      <div class="metric"><span>BALANCE</span><b id="balance">— SOL</b><small id="balanceUsd">Awaiting bot data</small></div>
       <div class="metric"><span>OPEN POSITIONS</span><b id="openCount">0</b><small>Active catches</small></div>
       <div class="metric"><span>WIN / LOSS</span><b class="positive" id="pnl">+0.00 SOL</b><small id="tradeCount">0 trades</small></div>
       <div class="live-pill" id="livePill"><i></i><b>CONNECTING</b><small>Menunggu bot</small></div>
@@ -124,87 +124,92 @@ for(const x of [-1.8,1.8])for(const z of [-1.25,1.25])box(dock,0x563820,[x,-.75,
 const lantern=new THREE.Group();dock.add(lantern);lantern.position.set(-1.6,.7,1.35);
 mesh(new THREE.CylinderGeometry(.22,.28,.5,8),mat(0x283c4b,.35,.6),lantern,[0,0,0]);mesh(new THREE.SphereGeometry(.18,12,10),new THREE.MeshBasicMaterial({color:0xffbf55}),lantern,[0,.04,0]);const lamp=new THREE.PointLight(0xffa83d,8,5);lamp.position.set(0,.1,0);lantern.add(lamp);
 
-// Stylized 3D ANIME WOMAN angler — seated pose, long hair, feminine silhouette,
-// visible face oriented toward the ocean (screen-right) and partly toward camera.
+// ONE PIECE / NAMI-STYLE woman angler — long orange hair, big blue eyes,
+// straw hat with red band, red bikini, curvy hourglass figure, seated on a chair.
 const woman=new THREE.Group();scene.add(woman);
-// Move her fully onto the visible right half of the pier, clear of the scanner overlay.
-woman.position.set(-3.55,.42,2.05);woman.rotation.y=1.08;woman.scale.setScalar(1.22);
-const skin=mat(0xffd2bd), skinShade=mat(0xe9a995), hair=mat(0x24151b,.15), hairHi=mat(0x633342), hairLight=mat(0x96505a),
-      blouse=mat(0xfff2e8), blouseTrim=mat(0xe8b7aa), skirt=mat(0x3c9cb5), skirtShade=mat(0x216b88),
-      boot=mat(0x6b4637), hatmat=mat(0xe8c88f), hatBand=mat(0x9b5144), flower=mat(0xfff8ed);
+woman.position.set(-3.85,.42,1.85);woman.rotation.y=1.08;woman.scale.setScalar(1.22);
+// Warm anime skin, bright orange Nami hair, red bikini.
+const skin=new THREE.MeshPhysicalMaterial({color:0xffd2bd,roughness:.5,metalness:0,clearcoat:.4,clearcoatRoughness:.5});
+const skinShade=mat(0xe9a995),
+      hairOrange=mat(0xf47c20,.25), hairOrangeDark=mat(0xd95f0e,.25), hairOrangeLight=mat(0xff9a3d,.25),
+      bikini=mat(0xd93a4e), bikiniDark=mat(0xa82a3c),
+      hatmat=mat(0xe8c88f), hatBandRed=mat(0xc0392b);
 const torso=new THREE.Group();woman.add(torso);torso.position.set(0,1.12,0);
-// Waist and fitted blouse give the body a clear feminine shape.
-mesh(new THREE.CapsuleGeometry(.27,.48,6,14),blouse,torso,[0,.02,0],[1,.95,.82]);
-mesh(new THREE.SphereGeometry(.31,20,16),blouse,torso,[-.19,.20,.12],[.72,.78,.78]);
-mesh(new THREE.SphereGeometry(.31,20,16),blouse,torso,[.19,.20,.12],[.72,.78,.78]);
-mesh(new THREE.TorusGeometry(.285,.025,8,28),blouseTrim,torso,[0,-.23,.02],[1,.72,1]);
-// Neck and anime face. Face points toward +Z; the body is turned toward the fishing area.
-mesh(new THREE.CylinderGeometry(.105,.13,.23,16),skin,torso,[0,.43,.02]);
-const head=new THREE.Group();torso.add(head);head.position.set(0,.77,.055);
-mesh(new THREE.SphereGeometry(.39,28,22),skin,head,[0,0,0],[.83,1.02,.78]);
-// Cheeks and small nose.
-for(const x of [-.205,.205])mesh(new THREE.SphereGeometry(.075,12,10),mat(0xf3a8a0),head,[x,-.105,.285],[1.2,.48,.22]);
-mesh(new THREE.SphereGeometry(.045,12,10),skinShade,head,[0,-.015,.31],[.7,1,.55]);
-// Large anime eyes with irises, highlights, brows and lashes.
-for(const x of [-.145,.145]){
-  mesh(new THREE.SphereGeometry(.092,16,12),mat(0xfffbf4),head,[x,.055,.295],[.78,1.22,.42]);
-  mesh(new THREE.SphereGeometry(.061,14,12),mat(0x70452f),head,[x+.012,.045,.329],[.78,1.15,.35]);
-  mesh(new THREE.SphereGeometry(.034,12,10),mat(0x171b2a),head,[x+.014,.04,.35],[.8,1.1,.3]);
-  mesh(new THREE.SphereGeometry(.022,10,8),mat(0xffffff),head,[x-.008,.072,.362]);
-  const brow=mesh(new THREE.CapsuleGeometry(.018,.12,3,6),hair,head,[x,.17,.29]);brow.rotation.z=x<0?-.12:.12;
-  const lash=mesh(new THREE.CapsuleGeometry(.012,.10,3,5),hair,head,[x,.125,.32]);lash.rotation.z=x<0?-.35:.35;
+// ONE PIECE hourglass lathe torso: BIG bust, narrow waist, wide hips.
+const prof=[[0.001,-0.36],[0.17,-0.36],[0.215,-0.30],[0.24,-0.22],[0.19,-0.12],[0.15,-0.02],[0.165,0.08],[0.20,0.18],[0.24,0.26],[0.24,0.34],[0.225,0.40],[0.13,0.44],[0.001,0.44]];
+const torsoMesh=mesh(new THREE.LatheGeometry(prof.map(p=>new THREE.Vector2(p[0],p[1])),28),skin,torso,[0,0,0],[1.25,1,0.9]);
+// Bikini top: two full cups + under-bust band + shoulder straps.
+for(const sx of [-1,1]){
+  mesh(new THREE.SphereGeometry(.14,16,12),bikini,torso,[sx*.12,.26,.16],[1,.9,.62]);
+  const strap=mesh(new THREE.CylinderGeometry(.016,.016,.20,6),bikini,torso,[sx*.13,.40,.11]);strap.rotation.x=.2;strap.rotation.z=sx*-.12;
 }
-// Smile.
-const smile=mesh(new THREE.TorusGeometry(.052,.009,6,16,Math.PI),mat(0xa94e58),head,[0,-.205,.302]);smile.rotation.z=Math.PI;
-// Long dark auburn hair cap and flowing locks down the back and shoulders.
-mesh(new THREE.SphereGeometry(.405,24,18,0,Math.PI*2,0,Math.PI*.62),hair,head,[0,.12,-.055],[1.04,1.08,1.02]);
-for(let i=0;i<13;i++){
-  const x=-.34+i*.057;
-  const len=.92+(i%4)*.13;
-  const lock=mesh(new THREE.CapsuleGeometry(.064,len,5,9),i%3===0?hairHi:hair,head,[x,-.48,-.19-(i%3)*.035],[1,1,.82]);
-  lock.rotation.z=(i-6)*-.035;lock.rotation.x=-.12;
+mesh(new THREE.CylinderGeometry(.23,.23,.035,20),bikiniDark,torso,[0,.15,0]);
+// Bikini bottom over the hips.
+mesh(new THREE.SphereGeometry(.29,20,14),bikini,torso,[0,-.25,.05],[1.12,.55,.82]);
+// Neck + head (anime proportion: head a little larger, like One Piece).
+mesh(new THREE.CylinderGeometry(.055,.065,.10,16),skin,torso,[0,.47,.01]);
+const head=new THREE.Group();torso.add(head);head.position.set(0,.60,.03);head.scale.setScalar(1.18);head.rotation.y=-.55;
+mesh(new THREE.SphereGeometry(.125,28,22),skin,head,[0,0,0],[.92,1.08,.95]);
+// ONE PIECE face: natural-size blue eyes placed clearly ON the face surface
+// (pushed forward so they are visible, not buried inside the head).
+for(const x of [-.04,.04]){
+  mesh(new THREE.SphereGeometry(.026,14,10),mat(0xfffbf4),head,[x,.015,.115],[.85,1.1,.45]);
+  mesh(new THREE.SphereGeometry(.017,12,10),mat(0x2a6fd4),head,[x,.015,.125],[.85,1.1,.4]);
+  mesh(new THREE.SphereGeometry(.009,10,8),mat(0x101418),head,[x,.015,.132]);
+  mesh(new THREE.SphereGeometry(.005,8,6),mat(0xffffff),head,[x+.007,.026,.137]);
+  const brow=mesh(new THREE.CapsuleGeometry(.005,.04,3,6),hairOrangeDark,head,[x,.055,.118]);brow.rotation.z=x<0?-.12:.12;
+  mesh(new THREE.SphereGeometry(.016,10,8),mat(0xff9a8a,.6),head,[x*1.9,-.018,.115],[1,.7,.4]);
 }
-// Two front locks frame the cheeks.
+const nose=mesh(new THREE.ConeGeometry(.012,.03,8),skinShade,head,[0,-.025,.12]);nose.rotation.x=Math.PI/2;
+mesh(new THREE.SphereGeometry(.022,12,8),mat(0xd45a5a),head,[0,-.06,.115],[1.6,.5,.5]);
+// LONG flowing orange Nami hair: cap + big back mane + side locks + face strands.
+mesh(new THREE.SphereGeometry(.135,24,18,0,Math.PI*2,0,Math.PI*.62),hairOrange,head,[0,.015,-.022],[1,1.05,1]);
+// Back mane: 3 long locks flowing down the back past the shoulders.
+for(const [sx,rz,ry] of [[0,0,0],[-.09,.35,.15],[.09,-.35,-.15]]){
+  const lock=mesh(new THREE.CapsuleGeometry(.075,.5,5,10),sx===0?hairOrange:hairOrangeDark,head,[sx,-.32,-.16]);
+  lock.rotation.x=.22+ry;lock.rotation.z=rz;
+}
+// Extra flowing volume: wide flat mane behind the shoulders.
+const mane=mesh(new THREE.SphereGeometry(.16,18,14),hairOrangeDark,head,[0,-.28,-.20],[1.15,1.6,.5]);mane.rotation.x=.18;
+// Side locks framing the face, hanging past the shoulders.
 for(const side of [-1,1]){
-  const front=mesh(new THREE.CapsuleGeometry(.055,.55,5,9),hairHi,head,[side*.31,-.20,.16]);
-  front.rotation.z=side*.13;
+  const lock=mesh(new THREE.CapsuleGeometry(.045,.38,5,10),hairOrange,head,[side*.12,-.22,.05]);
+  lock.rotation.z=side*.12;lock.rotation.x=.08;
+  const strand=mesh(new THREE.CapsuleGeometry(.022,.16,5,8),hairOrangeLight,head,[side*.105,-.06,.08]);strand.rotation.z=side*.15;
 }
-// Wide straw hat, crown, red-brown band and flower on the camera-facing side.
-mesh(new THREE.CylinderGeometry(.61,.58,.085,40),hatmat,head,[0,.39,-.025],[1,.32,1]);
-mesh(new THREE.CylinderGeometry(.285,.32,.29,24),hatmat,head,[0,.56,-.035]);
-mesh(new THREE.CylinderGeometry(.326,.326,.052,24),hatBand,head,[0,.51,-.035]);
-mesh(new THREE.SphereGeometry(.085,12,10),mat(0xe6a64c),head,[.39,.49,.16]);
-for(let i=0;i<6;i++){const a=i*Math.PI/3;mesh(new THREE.SphereGeometry(.075,12,10),flower,head,[.39+Math.cos(a)*.095,.49+Math.sin(a)*.095,.16],[1,.8,.55]);}
-// Seated hips and skirt; thighs extend forward over the pier, knees bent down.
-mesh(new THREE.SphereGeometry(.39,20,14),skirt,woman,[0,.78,-.02],[1.12,.62,.95]);
-mesh(new THREE.CylinderGeometry(.40,.47,.22,24),skirt,woman,[0,.67,-.02],[1,.55,1]);
-// Kursi kayu: dia duduk di kursi (dudukan + sandaran + 4 kaki sampai dermaga).
+// Straw sun hat with the Luffy-style RED band.
+mesh(new THREE.CylinderGeometry(.18,.17,.022,28),hatmat,head,[0,.155,-.01]);
+mesh(new THREE.CylinderGeometry(.10,.11,.08,20),hatmat,head,[0,.19,-.01]);
+mesh(new THREE.CylinderGeometry(.113,.113,.022,20),hatBandRed,head,[0,.168,-.01]);
+// Wooden chair: she sits on it (seat + back + 4 legs down to the pier).
 const chairWood=mat(0x8a5a2e),chairDark=mat(0x6b4423);
 mesh(new THREE.BoxGeometry(.95,.09,.85),chairWood,woman,[0,.70,-.02]);
 const chairBack=mesh(new THREE.BoxGeometry(.9,.78,.08),chairWood,woman,[0,1.08,-.44]);chairBack.rotation.x=-.10;
 for(const sx of [-1,1])for(const sz of [-1,1])
   mesh(new THREE.BoxGeometry(.09,.82,.09),chairDark,woman,[sx*.34,.25,sz*.28]);
+// Seated legs: natural human shape — full thigh tapering to the knee, a smooth
+// rounded knee cap (flat, not a ball), a calf with a real muscle bulge that
+// tapers to a slim ankle, then a bare foot with toes flat on the pier.
 const legs=[];
 for(const side of [-1,1]){
-  const thigh=new THREE.Group();woman.add(thigh);thigh.position.set(side*.20,.78,.12);
-  // Paha horizontal ke depan (posisi duduk); betis turun vertikal dari lutut ke dermaga.
-  const thighMesh=mesh(new THREE.CapsuleGeometry(.145,.62,5,10),skin,thigh,[0,0,.35]);
+  const thigh=new THREE.Group();woman.add(thigh);thigh.position.set(side*.20,.76,.08);
+  const thighMesh=mesh(new THREE.CylinderGeometry(.115,.08,.46,14),skin,thigh,[0,0,.28]);
   thighMesh.rotation.x=Math.PI/2;
-  mesh(new THREE.CapsuleGeometry(.115,.72,5,9),skin,thigh,[side*.10,-.47,.72],[1,1,.9]);
-  mesh(new THREE.BoxGeometry(.25,.13,.40),boot,thigh,[side*.10,-.88,.80]);
+  // Subtle flattened knee cap that blends thigh into calf (not a ball joint).
+  mesh(new THREE.SphereGeometry(.07,14,10),skin,thigh,[0,-.01,.51],[1,.75,.9]);
+  // Calf: slim tube + muscle bulge on the back of the upper calf.
+  mesh(new THREE.CylinderGeometry(.07,.042,.70,14),skin,thigh,[side*.04,-.35,.51]);
+  mesh(new THREE.SphereGeometry(.062,14,10),skin,thigh,[side*.04,-.22,.46],[.9,1.5,.85]);
+  // Bare foot: heel + arch + 5 toes.
+  const foot=new THREE.Group();thigh.add(foot);foot.position.set(side*.04,-.81,.62);
+  mesh(new THREE.SphereGeometry(.055,12,10),skin,foot,[0,0,0],[1,.55,1.9]);
+  for(let i=0;i<5;i++){
+    const toe=mesh(new THREE.SphereGeometry(.014,8,6),skin,foot,[-.04+i*.02,-.01,.11],[1,.8,1.4]);
+  }
   legs.push(thigh);
 }
-// Slim arms, sleeves and hands positioned around the fishing rod.
-const armL=new THREE.Group();woman.add(armL);armL.position.set(-.29,1.68,.02);
-mesh(new THREE.CapsuleGeometry(.105,.34,5,10),blouse,armL,[0,-.10,0],[1,1,.9]);
-mesh(new THREE.CapsuleGeometry(.075,.42,5,10),skin,armL,[.02,-.39,.12]);
-mesh(new THREE.SphereGeometry(.09,12,10),skin,armL,[.02,-.62,.16]);armL.rotation.z=-.48;armL.rotation.x=.55;
-const armR=new THREE.Group();woman.add(armR);armR.position.set(.28,1.68,.02);
-mesh(new THREE.CapsuleGeometry(.105,.34,5,10),blouse,armR,[0,-.10,0],[1,1,.9]);
-mesh(new THREE.CapsuleGeometry(.075,.42,5,10),skin,armR,[-.02,-.39,.12]);
-mesh(new THREE.SphereGeometry(.095,14,12),skin,armR,[.175,-.605,.16]);armR.rotation.z=.32;
-// Rod grip is placed exactly at the right hand; the rod casts out over the water.
-const rodPivot=new THREE.Group();woman.add(rodPivot);rodPivot.position.set(.455,1.075,.18);rodPivot.rotation.z=-.76;
+// Rod grip centred in front of her chest so BOTH hands can reach it.
+const rodPivot=new THREE.Group();woman.add(rodPivot);rodPivot.position.set(0,1.20,.48);rodPivot.rotation.z=-.76;
 // Joran 3 segmen: melengkung nyata saat ada ikan (bite), bukan sekadar miring.
 const rodMat=mat(0x4a2f25,.3);
 const seg1=new THREE.Group();rodPivot.add(seg1);
@@ -218,7 +223,31 @@ const rodTipMark=new THREE.Object3D();seg3.add(rodTipMark);rodTipMark.position.s
 const lineMat=new THREE.LineBasicMaterial({color:0xe8f8ff});
 const fishingLine=new THREE.Line(new THREE.BufferGeometry(),lineMat);scene.add(fishingLine);
 const lineEndLocal=new THREE.Vector3(2.76,1.30,0);
-const rodGrip=mesh(new THREE.SphereGeometry(.105,14,12),skin,rodPivot,[0,0,.015]);
+// Arms reach forward to the rod; each hand has a palm + curled fingers + thumb.
+function makeHand(parent){
+  const hand=new THREE.Group();parent.add(hand);hand.position.set(0,-.64,0);
+  mesh(new THREE.SphereGeometry(.05,12,10),skin,hand,[0,0,0],[1,1.3,.7]);
+  for(let i=0;i<4;i++){
+    const f=mesh(new THREE.CapsuleGeometry(.011,.05,3,6),skin,hand,[-.033+i*.022,-.075,.01]);
+    f.rotation.x=.5;
+  }
+  const th=mesh(new THREE.CapsuleGeometry(.012,.04,3,6),skin,hand,[.045,-.03,.02]);th.rotation.z=-.6;
+  return hand;
+}
+function aimArm(group,target){
+  const dir=new THREE.Vector3(target[0]-group.position.x,target[1]-group.position.y,target[2]-group.position.z).normalize();
+  group.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),dir);
+}
+const armL=new THREE.Group();woman.add(armL);armL.position.set(-.28,1.50,.02);
+mesh(new THREE.CapsuleGeometry(.06,.28,5,10),skin,armL,[0,-.13,0]);
+mesh(new THREE.CapsuleGeometry(.05,.28,5,10),skin,armL,[0,-.40,0]);
+makeHand(armL);
+aimArm(armL,[.124,1.331,.48]);
+const armR=new THREE.Group();woman.add(armR);armR.position.set(.28,1.50,.02);
+mesh(new THREE.CapsuleGeometry(.06,.28,5,10),skin,armR,[0,-.13,0]);
+mesh(new THREE.CapsuleGeometry(.05,.28,5,10),skin,armR,[0,-.40,0]);
+makeHand(armR);
+aimArm(armR,[0,1.20,.48]);
 
 // Fish factory with moving tail and token name sprite.
 const fishGroup=new THREE.Group();scene.add(fishGroup);const fishObjects=new Map();
@@ -315,7 +344,7 @@ const clock=new THREE.Clock();let latest=null,latestEvents=[],prevTradeCount=0,l
 function format(n,d=3){if(n===null||n===undefined||Number.isNaN(Number(n)))return '—';return Number(n).toFixed(d);}
 function setText(id,v){const el=$(id);if(el)el.textContent=v;}
 function addEvent(kind,title,body=''){const host=$('events');const row=document.createElement('div');row.className='event '+kind;const ico=kind==='buy'?'🎣':kind==='sell'?'🐟':kind==='sl'?'⚠️':'✨';row.innerHTML=`<span class="ico">${ico}</span><div><strong></strong><small></small></div>`;row.querySelector('strong').textContent=title;row.querySelector('small').textContent=body;host.prepend(row);while(host.children.length>7)host.lastChild.remove();}
-function renderStatus(s){if(!s)return;latest=s;const start=Number(s.start||0),eq=Number(s.eq||0),pnl=Number(s.closed_pnl??(eq-start));setText('balance',`${format(eq,4)} SOL`);setText('balanceUsd',`Free ${format(s.free||0,4)} SOL · ${s.demo?'DEMO':'LIVE MODE'}`);setText('openCount',(s.positions||[]).length);setText('pnl',`${pnl>=0?'+':''}${format(pnl,4)} SOL`);setText('tradeCount',`${s.trades_total??(s.trades||[]).length} trades`);setText('mode',s.mode||'—');setText('scanCount',s.scan_tokens??(s.scanning||[]).length);setText('watchCount',(s.watch||[]).length);setText('updated',s.updated_label||new Date(s.updated_at||Date.now()).toLocaleTimeString());
+function renderStatus(s){if(!s)return;latest=s;const start=Number(s.start||0),eq=Number(s.eq||0),pnl=Number(s.closed_pnl??(eq-start));setText('balance',`${format(eq,4)} SOL`);setText('balanceUsd',`Free ${format(s.free||0,4)} SOL`);setText('openCount',(s.positions||[]).length);setText('pnl',`${pnl>=0?'+':''}${format(pnl,4)} SOL`);setText('tradeCount',`${s.trades_total??(s.trades||[]).length} trades`);setText('mode','ACTIVE');setText('scanCount',s.scan_tokens??(s.scanning||[]).length);setText('watchCount',(s.watch||[]).length);setText('updated',s.updated_label||new Date(s.updated_at||Date.now()).toLocaleTimeString());
 
 
  const pos=$('positions');pos.replaceChildren();(s.positions||[]).forEach(p=>{const e=document.createElement('div');e.className='position';const pct=(p.pnl_pct!=null)?Number(p.pnl_pct):((Number(p.last_px||p.entry||0)/Number(p.entry||1))-1)*100;const pnlSol=(p.cost!=null&&p.value!=null)?(Number(p.value)-Number(p.cost)):null;e.innerHTML='<b></b><span class="pnl"></span><small></small>';e.querySelector('b').textContent='$'+p.symbol;e.querySelector('.pnl').textContent=`${pct>=0?'+':''}${pct.toFixed(1)}%`;e.querySelector('small').textContent=`Entry ${p.entry||'—'} · Now ${p.last_px||p.entry||'—'}${pnlSol==null?'':` · ${pnlSol>=0?'+':''}${pnlSol.toFixed(4)} SOL`}`;pos.append(e);});if(!pos.children.length)pos.innerHTML='<div class="empty">Belum ada posisi aktif</div>';
@@ -334,7 +363,7 @@ $('fsBtn').addEventListener('click',()=>{const app=$('app');app.classList.toggle
 function liveFromMode(m,base){
   return{start:Number(m.start||1),eq:Number(m.eq||0),free:Number(m.eq||0),
     closed_pnl:Number(m.closed_pnl??((m.eq||0)-(m.start||1))),
-    demo:true,mode:m.mode||'demo-easy',
+    mode:m.mode||'',
     positions:(Array.isArray(m.pos)?m.pos:[]).map(p=>({symbol:p.symbol,mint:p.symbol,entry:p.entry,last_px:p.px,cost:p.cost,value:p.value,pnl_pct:p.pnl,opened:p.opened})),
     trades:[],trades_total:Number(m.trades||0),wins:Number(m.wins||0),
     scanning:base?base.scanning:[],watch:base?base.watch:[],
@@ -349,7 +378,7 @@ async function fetchLive(){
     const r=await fetch('/api/status',{cache:'no-store'});
     if(r.ok){
       const d=await r.json();
-      const m=(d.modes&&(d.modes['demo-easy']||d.modes[Object.keys(d.modes)[0]]))||null;
+      const m=(d.modes&&(d.modes[Object.keys(d.modes)[0]]))||null;
       if(m){
         const live=liveFromMode(m,null);
         renderStatus(live);setConnection(true);
@@ -437,7 +466,7 @@ async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-st
 
 // Animated 3D ocean, character pose, rod, fish schools, buoy.
 function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();const a=waterGeo.attributes.position;for(let i=0;i<a.count;i++){const x=waterBase[i*3],z=waterBase[i*3+2];a.array[i*3+1]=waterBase[i*3+1]+Math.sin(x*.36+t*1.15)*.10+Math.cos(z*.48+t*.85)*.075+Math.sin((x+z)*.22+t*.6)*.06;}a.needsUpdate=true;waterGeo.computeVertexNormals();
- woman.position.y=.42+Math.sin(t*1.4)*.025;torso.rotation.z=Math.sin(t*.7)*.012;head.rotation.z=Math.sin(t*.55)*.018;armL.rotation.z=-.30+Math.sin(t*1.1)*.025;armR.rotation.z=.32+Math.sin(t*.9)*.025;let biting=!!(latest&&latest.positions&&latest.positions.length);bite+=((biting?1:0)-bite)*.04;rodPivot.rotation.z=-.76-bite*.30+Math.sin(t*.85)*.035+Math.sin(t*7)*.05*bite;seg1.rotation.z=-.03-bite*.14+Math.sin(t*.8)*.015;seg2.rotation.z=-.03-bite*.20+Math.sin(t*.8)*.015;seg3.rotation.z=-.04-bite*.26+Math.sin(t*6)*.03*bite;for(const l of legs)l.rotation.x=Math.sin(t*.65)*.018;
+ woman.position.y=.42+Math.sin(t*1.4)*.025;torso.rotation.z=Math.sin(t*.7)*.012;head.rotation.z=Math.sin(t*.55)*.018;let biting=!!(latest&&latest.positions&&latest.positions.length);bite+=((biting?1:0)-bite)*.04;rodPivot.rotation.z=-.76-bite*.30+Math.sin(t*.85)*.035+Math.sin(t*7)*.05*bite;seg1.rotation.z=-.03-bite*.14+Math.sin(t*.8)*.015;seg2.rotation.z=-.03-bite*.20+Math.sin(t*.8)*.015;seg3.rotation.z=-.04-bite*.26+Math.sin(t*6)*.03*bite;for(const l of legs)l.rotation.x=Math.sin(t*.65)*.018;
  // Keep the bobber physically attached to the fishing line and rod tip.
  const bobberWorld=rodPivot.localToWorld(lineEndLocal.clone());bobberWorld.y=.06+Math.sin(t*2.4)*.075;buoy.position.copy(bobberWorld);buoy.rotation.z=Math.sin(t*2)*.09;
  const rodTipWorld=new THREE.Vector3();rodTipMark.getWorldPosition(rodTipWorld);fishingLine.geometry.setFromPoints([rodTipWorld,bobberWorld]);fishingLine.geometry.computeBoundingSphere();

@@ -116,7 +116,7 @@ mesh(new THREE.PlaneGeometry(65,30),mat(0x124e59),scene,[0,-5.3,-4]).rotation.x=
 for(let i=0;i<28;i++){const x=-13+Math.random()*26,z=-10+Math.random()*9;const c=mat([0xe76d70,0xf0a34e,0x8c6bd6,0x4cc4ae][i%4]);const h=.5+Math.random()*1.2;const stem=mesh(new THREE.CylinderGeometry(.06,.12,h,7),c,scene,[x,-4.7+h/2,z]);for(let k=0;k<3;k++)mesh(sphere,c,scene,[x+(Math.random()-.5)*.6,-4.1+h*.7,z],[.22,.25,.22]);}
 
 // Wooden fishing pier, posts and lantern.
-const dock=new THREE.Group();scene.add(dock);dock.position.set(-5.2,.05,2.7);
+const dock=new THREE.Group();scene.add(dock);dock.position.set(-8.2,.05,2.7);
 box(dock,0x80512e,[0,0,0],[4.8,.35,3.5]);
 for(let i=0;i<8;i++)box(dock,i%2?0xa96e3b:0x966033,[-2.05+i*.58,.2,0],[.52,.08,3.45]);
 for(const x of [-1.8,1.8])for(const z of [-1.25,1.25])box(dock,0x563820,[x,-.75,z],[.2,1.8,.2]);
@@ -127,7 +127,7 @@ mesh(new THREE.CylinderGeometry(.22,.28,.5,8),mat(0x283c4b,.35,.6),lantern,[0,0,
 // Seated realistic angler cutout with wooden chair and fishing rod (visual-only).
 // Bot notification, API, trading data, events, and fish/token logic remain unchanged.
 const woman=new THREE.Group();scene.add(woman);
-woman.position.set(-5.8,.22,2.7);woman.rotation.y=0;woman.scale.setScalar(.72);
+woman.position.set(-7.3,.22,2.7);woman.rotation.y=0;woman.scale.setScalar(.72);
 const torso=new THREE.Group();woman.add(torso);
 const head=new THREE.Group();torso.add(head);
 const legs=[];
@@ -191,7 +191,10 @@ function updateTokenFish(status){
       const col=(t.held||t.sold)?(t.pnlSol!=null&&t.pnlSol>=0?0xffc64c:0x66c8f0):0x43c7db;
       const f=makeFish(t.symbol||'TOKEN',col,1.05);
       fishGroup.add(f);
-      f.userData.baseX=-1+Math.random()*7;f.userData.baseY=-1.3-Math.random()*1.8;f.userData.baseZ=-1+Math.random()*-3;f.userData.phase=Math.random()*6.28;f.userData.speed=.65;f.userData.tokenKey=key;
+      // Ikan token berkumpul di dekat pelampung (bobber) supaya nama + ikannya kelihatan.
+      const bx=(typeof buoy!=='undefined'&&buoy.position&&Math.abs(buoy.position.x)>.01)?buoy.position.x:-3.8;
+      const bz=(typeof buoy!=='undefined'&&buoy.position&&Math.abs(buoy.position.z)>.01)?buoy.position.z:2.7;
+      f.userData.baseX=bx+(Math.random()*4-2);f.userData.baseY=-0.6-Math.random()*0.8;f.userData.baseZ=bz+(Math.random()*3-1.5);f.userData.phase=Math.random()*6.28;f.userData.speed=.65;f.userData.tokenKey=key;
       fishObjects.set(key,f);
     }
     const f=fishObjects.get(key);
@@ -323,7 +326,7 @@ function renderEvents(list){
   host.replaceChildren();
   const sold=new Map();
   for(const e of latestEvents){
-    if(e.kind!=='jual')continue;
+    if(e.kind!=='jual'&&e.kind!=='sl')continue;
     const sym=tokenFromTitle(e.title);if(!sym)continue;
     const t=String(e.title||'').toUpperCase();
     if(!(t.includes('TRAILING')||t.includes('STOP LOSS')||t.includes('TAKE PROFIT')||t.includes('PANIC')||t.includes('KELUAR')||t.includes('BATAS WAKTU')))continue;

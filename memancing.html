@@ -440,12 +440,23 @@ function applyLiveStatus(m){
     document.getElementById('lsStatus').classList.add('live');
   }
 }
+function fetchLatestEvent(){
+  fetch('/api/events').then(r=>r.ok?r.json():null).then(d=>{
+    const evs=d&&Array.isArray(d.events)?d.events:[];
+    if(!evs.length) return;
+    const e=evs[0];
+    const t=e.ts?new Date(e.ts).toLocaleTimeString():'';
+    const pnl=(e.pnl==null?'':' ('+(e.pnl>0?'+':'')+e.pnl+'%)');
+    const el=$('lsLast'); if(el) el.textContent=(e.title||'Event')+pnl+(t?' • '+t:'');
+  }).catch(()=>{});
+}
 function tryLiveUpdate(){
   fetch('/api/status').then(r=>r.ok?r.json():null).then(d=>{
     if(!d||!d.modes) return;
     const m=d.modes['demo-easy']||d.modes[Object.keys(d.modes)[0]];
     if(m) applyLiveStatus(m);
   }).catch(()=>{});
+  fetchLatestEvent();
 }
 tryLiveUpdate();
 setInterval(tryLiveUpdate,30000);
@@ -585,6 +596,7 @@ function pollData(){
     fetch('/api/status').then(r=>r.ok?r.json():null).then(dd=>{
       if(dd&&dd.modes){ const mm=dd.modes['demo-easy']||dd.modes[Object.keys(dd.modes)[0]]; if(mm) applyLiveStatus(mm); }
     }).catch(()=>{});
+    fetchLatestEvent();
   }).catch(()=>{});
 }
 

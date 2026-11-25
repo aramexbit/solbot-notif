@@ -62,8 +62,7 @@ window.SOLBOT_CONFIG = {
       <button class="icon-btn" id="soundBtn" title="Toggle sound">♫</button><button class="icon-btn" id="fsBtn" title="Fullscreen (sembunyikan panel)">⛶</button>
     </header>
 
-    <aside class="event-panel glass"><h2>⚡ EVENT FEED</h2><div id="events" class="event-list"><div class="event muted">Waiting for bot events…</div></div></aside>
-    <aside class="scanner-panel glass"><h2>⌕ TOKEN SCANNER <span class="scan-dot"></span></h2><div class="subhead">TOKEN YANG SEDANG DICARI</div><div id="scanning" class="token-list"><div class="empty">Menunggu hasil scanner…</div></div><div class="subhead watch-head">WATCHLIST</div><div id="watch" class="token-list"><div class="empty">Belum ada token watchlist</div></div></aside>
+    <aside class="event-panel glass"><h2>💰 TOKEN TERJUAL</h2><div id="events" class="event-list"><div class="event muted">Belum ada token terjual</div></div></aside>
     <section class="position-panel glass"><h2>🎣 ACTIVE CATCHES</h2><div id="positions" class="position-list"><div class="empty">Belum ada posisi aktif</div></div></section>
     <section class="bottom-grid">
       <div class="glass history-panel"><h2>◷ TRADE HISTORY</h2><div class="table-wrap"><table><thead><tr><th>TIME</th><th>TOKEN</th><th>ACTION</th><th>PRICE / PNL</th></tr></thead><tbody id="history"><tr><td colspan="4" class="empty">Belum ada transaksi</td></tr></tbody></table></div></div>
@@ -237,10 +236,7 @@ function updateTokenFish(status){
       if(ps!=null&&closedBySym[sym]==null)closedBySym[sym]={pnlSol:ps,pct:(e.pnl==null?null:Number(e.pnl))};
     }
   }
-  for(const sym in closedBySym){
-    if(wanted.has(sym))continue;
-    wanted.set(sym,{symbol:sym,sold:true,pnlSol:closedBySym[sym].pnlSol,pct:closedBySym[sym].pct});
-  }
+  // Token yang sudah terjual TIDAK jadi ikan — hanya yang di-scan (watch) dan di-hold yang tampil.
   for(const e of evs){
     if(e.kind!=='sinyal')continue;
     const sym=tokenFromTitle(e.title);if(!sym)continue;
@@ -295,8 +291,8 @@ function format(n,d=3){if(n===null||n===undefined||Number.isNaN(Number(n)))retur
 function setText(id,v){const el=$(id);if(el)el.textContent=v;}
 function addEvent(kind,title,body=''){const host=$('events');const row=document.createElement('div');row.className='event '+kind;const ico=kind==='buy'?'🎣':kind==='sell'?'🐟':kind==='sl'?'⚠️':'✨';row.innerHTML=`<span class="ico">${ico}</span><div><strong></strong><small></small></div>`;row.querySelector('strong').textContent=title;row.querySelector('small').textContent=body;host.prepend(row);while(host.children.length>7)host.lastChild.remove();}
 function renderStatus(s){if(!s)return;latest=s;const start=Number(s.start||0),eq=Number(s.eq||0),pnl=Number(s.closed_pnl??(eq-start));setText('balance',`${format(eq,4)} SOL`);setText('balanceUsd',`Free ${format(s.free||0,4)} SOL · ${s.demo?'DEMO':'LIVE MODE'}`);setText('openCount',(s.positions||[]).length);setText('pnl',`${pnl>=0?'+':''}${format(pnl,4)} SOL`);setText('tradeCount',`${s.trades_total??(s.trades||[]).length} trades`);setText('mode',s.mode||'—');setText('scanCount',s.scan_tokens??(s.scanning||[]).length);setText('watchCount',(s.watch||[]).length);setText('updated',s.updated_label||new Date(s.updated_at||Date.now()).toLocaleTimeString());
- const scanning=$('scanning');scanning.replaceChildren();(s.scanning||[]).slice(0,7).forEach(t=>{const e=document.createElement('div');e.className='token';e.innerHTML='<div><b></b><small></small></div><span class="tag">SCAN</span>';e.querySelector('b').textContent='$'+(t.symbol||'TOKEN');e.querySelector('small').textContent=t.source||'Candidate';scanning.append(e);});if(!scanning.children.length)scanning.innerHTML='<div class="empty">Tidak ada kandidat saat ini</div>';
- const watch=$('watch');watch.replaceChildren();(s.watch||[]).slice(0,6).forEach(t=>{const e=document.createElement('div');e.className='token';e.innerHTML='<div><b></b><small></small></div><span class="tag">WATCH</span>';e.querySelector('b').textContent='$'+(t.symbol||'TOKEN');e.querySelector('small').textContent=t.src||t.source||'Watchlist';watch.append(e);});if(!watch.children.length)watch.innerHTML='<div class="empty">Belum ada watchlist</div>';
+
+
  const pos=$('positions');pos.replaceChildren();(s.positions||[]).forEach(p=>{const e=document.createElement('div');e.className='position';const pct=(p.pnl_pct!=null)?Number(p.pnl_pct):((Number(p.last_px||p.entry||0)/Number(p.entry||1))-1)*100;const pnlSol=(p.cost!=null&&p.value!=null)?(Number(p.value)-Number(p.cost)):null;e.innerHTML='<b></b><span class="pnl"></span><small></small>';e.querySelector('b').textContent='$'+p.symbol;e.querySelector('.pnl').textContent=`${pct>=0?'+':''}${pct.toFixed(1)}%`;e.querySelector('small').textContent=`Entry ${p.entry||'—'} · Now ${p.last_px||p.entry||'—'}${pnlSol==null?'':` · ${pnlSol>=0?'+':''}${pnlSol.toFixed(4)} SOL`}`;pos.append(e);});if(!pos.children.length)pos.innerHTML='<div class="empty">Belum ada posisi aktif</div>';
  renderTradeHistory();
  updateTokenFish(s);
@@ -411,22 +407,41 @@ function renderTradeHistory(){
   }
   if(!hist.children.length)hist.innerHTML='<tr><td colspan="4" class="empty">Belum ada transaksi</td></tr>';
 }
+// Panel TOKEN TERJUAL: hanya token yang sudah terjual penuh (close),
+// satu baris per token — nama + profit/loss PnL (SOL + %).
 function renderEvents(list){
   latestEvents=Array.isArray(list)?list:[];
   const host=$('events');if(!host) return;
   host.replaceChildren();
-  const evs=(Array.isArray(list)?list:[]).slice(0,7);
-  if(!evs.length){host.innerHTML='<div class="event muted">Waiting for bot events…</div>';return;}
-  for(const e of evs){
-    const k=eventKind(e);
-    const row=document.createElement('div');row.className='event '+k.cls;
-    const time=e.ts?new Date(e.ts).toLocaleTimeString():'';
-    const pnl=(e.pnl==null?'':' • '+(e.pnl>0?'+':'')+e.pnl+'%');
-    const blines=(e.body||'').split('\n').filter(x=>x.trim()).slice(0,2);
-    const body=[blines.join(' • '),time+pnl].filter(Boolean).join(' • ');
-    row.innerHTML=`<span class="ico">${k.ico}</span><div><strong></strong><small></small></div>`;
-    row.querySelector('strong').textContent=e.title||'Event';
-    row.querySelector('small').textContent=body;
+  const sold=new Map();
+  for(const e of latestEvents){
+    if(e.kind!=='jual')continue;
+    const sym=tokenFromTitle(e.title);if(!sym)continue;
+    const t=String(e.title||'').toUpperCase();
+    if(!(t.includes('TRAILING')||t.includes('STOP LOSS')||t.includes('TAKE PROFIT')||t.includes('PANIC')||t.includes('KELUAR')||t.includes('BATAS WAKTU')))continue;
+    if(sold.has(sym))continue;
+    const pnlSol=pnlSolFromBody(e.body);
+    const pct=(e.pnl==null?null:Number(e.pnl));
+    let action='SELL';
+    if(t.includes('TRAILING'))action='TRAILING STOP';
+    else if(t.includes('STOP LOSS'))action='STOP LOSS';
+    else if(t.includes('TAKE PROFIT'))action='TAKE PROFIT';
+    else if(t.includes('PANIC'))action='PANIC SELL';
+    else if(t.includes('KELUAR'))action='EXIT';
+    else if(t.includes('BATAS WAKTU'))action='TIME OUT';
+    sold.set(sym,{sym,action,pnlSol,pct,ts:Number(e.ts||Date.now())});
+  }
+  const rows=[...sold.values()].sort((a,b)=>b.ts-a.ts).slice(0,7);
+  if(!rows.length){host.innerHTML='<div class="event muted">Belum ada token terjual</div>';renderTradeHistory();if(latest)updateTokenFish(latest);return;}
+  for(const r of rows){
+    const win=r.pnlSol!=null&&r.pnlSol>=0;
+    const row=document.createElement('div');
+    row.className='event '+(win?'profit':'lose');
+    const time=new Date(r.ts).toLocaleTimeString();
+    const pnlTxt=r.pnlSol==null?'—':`${win?'+':''}${r.pnlSol.toFixed(4)} SOL${r.pct==null?'':` (${r.pct>=0?'+':''}${r.pct.toFixed(1)}%)`}`;
+    row.innerHTML=`<span class="ico">${win?'✅':'🔴'}</span><div><strong></strong><small></small></div>`;
+    row.querySelector('strong').textContent='$'+r.sym;
+    row.querySelector('small').textContent=`${r.action} • ${pnlTxt} • ${time}`;
     host.append(row);
   }
   renderTradeHistory();if(latest)updateTokenFish(latest);

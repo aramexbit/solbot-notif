@@ -298,7 +298,8 @@ function renderEvents(list){
     const row=document.createElement('div');row.className='event '+k.cls;
     const time=e.ts?new Date(e.ts).toLocaleTimeString():'';
     const pnl=(e.pnl==null?'':' • '+(e.pnl>0?'+':'')+e.pnl+'%');
-    const body=[(e.body||'').split('\n')[0],time+pnl].filter(Boolean).join(' • ');
+    const blines=(e.body||'').split('\n').filter(x=>x.trim()).slice(0,2);
+    const body=[blines.join(' • '),time+pnl].filter(Boolean).join(' • ');
     row.innerHTML=`<span class="ico">${k.ico}</span><div><strong></strong><small></small></div>`;
     row.querySelector('strong').textContent=e.title||'Event';
     row.querySelector('small').textContent=body;

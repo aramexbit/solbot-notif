@@ -319,6 +319,19 @@ $('fsBtn').addEventListener('click',()=>{const app=$('app');app.classList.toggle
 // Peta memancing-data.json (sumber yang sama dengan situs Mancing 2D) ke
 // bentuk yang dipakai renderStatus. Ikan = token hasil scanner (watchlist).
 function mapMancing(d){const fish=Array.isArray(d.fish)?d.fish:[];const watch=fish.filter(f=>f.result!=='open').map(f=>({symbol:f.sym,mint:f.sym,src:f.src||'Scanner',source:f.note||('Skor '+f.score),score:f.score,price:f.price}));const positions=fish.filter(f=>f.result==='open').map(f=>({symbol:f.sym,mint:f.sym,entry:f.price,last_px:f.price}));return{start:Number(d.start_sol||1),eq:Number(d.equity??d.start_sol??1),free:Number(d.equity??d.start_sol??1),demo:/demo/i.test(d.source||'')||d.mode==='easy',mode:d.mode||'demo-easy',positions,trades:[],scanning:watch,watch,updated_at:Date.now(),updated_label:d.updated||'',scan_tokens:d.scan?.tokens??watch.length,scan_passed:d.scan?.passed??watch.length,trades_total:d.trades_total??0,last_event:d.last_event||'',source:d.source||''};}
+// Bangun objek status live dari satu mode API (dipakai /api/status + live-status.json).
+function liveFromMode(m,base){
+  return{start:Number(m.start||1),eq:Number(m.eq||0),free:Number(m.eq||0),
+    closed_pnl:Number(m.closed_pnl??((m.eq||0)-(m.start||1))),
+    demo:true,mode:m.mode||'demo-easy',
+    positions:(Array.isArray(m.pos)?m.pos:[]).map(p=>({symbol:p.symbol,mint:p.symbol,entry:p.entry,last_px:p.px,cost:p.cost,value:p.value,pnl_pct:p.pnl,opened:p.opened})),
+    trades:[],trades_total:Number(m.trades||0),
+    scanning:base?base.scanning:[],watch:base?base.watch:[],
+    scan_tokens:base?base.scan_tokens:0,
+    updated_at:Number(m.ts||Date.now()),
+    updated_label:new Date(Number(m.ts||Date.now())).toLocaleTimeString(),
+    last_event:'',source:'live'};
+}
 async function fetchLive(){
   let base=null,baseLabel='';
   try{const r=await fetch('./memancing-data.json?'+Date.now(),{cache:'no-store'});if(r.ok){const d=await r.json();base=mapMancing(d);baseLabel=d.updated||'';}}catch(e){}
@@ -328,16 +341,22 @@ async function fetchLive(){
       const d2=await r2.json();
       const m=(d2.modes&&(d2.modes['demo-easy']||d2.modes[Object.keys(d2.modes)[0]]))||null;
       if(m){
-        const live={start:Number(m.start||1),eq:Number(m.eq||0),free:Number(m.eq||0),
-          closed_pnl:Number(m.closed_pnl??((m.eq||0)-(m.start||1))),
-          demo:true,mode:m.mode||'demo-easy',
-          positions:(Array.isArray(m.pos)?m.pos:[]).map(p=>({symbol:p.symbol,mint:p.symbol,entry:p.entry,last_px:p.px,cost:p.cost,value:p.value,pnl_pct:p.pnl,opened:p.opened})),
-          trades:[],trades_total:Number(m.trades||0),
-          scanning:base?base.scanning:[],watch:base?base.watch:[],
-          scan_tokens:base?base.scan_tokens:0,
-          updated_at:Number(m.ts||Date.now()),
-          updated_label:new Date(Number(m.ts||Date.now())).toLocaleTimeString(),
-          last_event:'',source:'live'};
+        const live=liveFromMode(m,base);
+        renderStatus(live);setConnection(true);
+        const pill=$('livePill');pill.querySelector('b').textContent='LIVE';
+        pill.querySelector('small').textContent='Data '+live.updated_label;
+        return;
+      }
+    }
+  }catch(e){}
+  // Fallback GitHub Pages: data live yang disinkron GitHub Action tiap 5 menit.
+  try{
+    const r3=await fetch('./live-status.json?'+Date.now(),{cache:'no-store'});
+    if(r3.ok){
+      const d3=await r3.json();
+      const m3=(d3.modes&&(d3.modes['demo-easy']||d3.modes[Object.keys(d3.modes)[0]]))||null;
+      if(m3){
+        const live=liveFromMode(m3,base);
         renderStatus(live);setConnection(true);
         const pill=$('livePill');pill.querySelector('b').textContent='LIVE';
         pill.querySelector('small').textContent='Data '+live.updated_label;
@@ -418,7 +437,7 @@ function renderEvents(list){
   }
   renderWinLose();if(latest)updateTokenFish(latest);
 }
-async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();renderEvents(d.events||[]);}catch(e){}}
+async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-store'});if(r.ok){const d=await r.json();renderEvents(d.events||[]);return;}}catch(e){}try{const r=await fetch('./live-events.json?'+Date.now(),{cache:'no-store'});if(r.ok){const d=await r.json();renderEvents(d.events||[]);}}catch(e){}}
 
 // Animated 3D ocean, character pose, rod, fish schools, buoy.
 function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();const a=waterGeo.attributes.position;for(let i=0;i<a.count;i++){const x=waterBase[i*3],z=waterBase[i*3+2];a.array[i*3+1]=waterBase[i*3+1]+Math.sin(x*.36+t*1.15)*.10+Math.cos(z*.48+t*.85)*.075+Math.sin((x+z)*.22+t*.6)*.06;}a.needsUpdate=true;waterGeo.computeVertexNormals();

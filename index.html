@@ -187,10 +187,11 @@ for(const sx of [-1,1])for(const sz of [-1,1])
 const legs=[];
 for(const side of [-1,1]){
   const thigh=new THREE.Group();woman.add(thigh);thigh.position.set(side*.20,.78,.12);
-  mesh(new THREE.CapsuleGeometry(.145,.62,5,10),skin,thigh,[side*.10,-.04,.47],[1,1,.92]);
-  // Bent lower leg and small brown shoe rest on the dock.
-  mesh(new THREE.CapsuleGeometry(.115,.50,5,9),skin,thigh,[side*.13,-.58,.83],[1,1,.9]);
-  mesh(new THREE.BoxGeometry(.25,.13,.40),boot,thigh,[side*.13,-.88,1.03]);
+  // Paha horizontal ke depan (posisi duduk); betis turun vertikal dari lutut ke dermaga.
+  const thighMesh=mesh(new THREE.CapsuleGeometry(.145,.62,5,10),skin,thigh,[0,0,.35]);
+  thighMesh.rotation.x=Math.PI/2;
+  mesh(new THREE.CapsuleGeometry(.115,.72,5,9),skin,thigh,[side*.10,-.47,.72],[1,1,.9]);
+  mesh(new THREE.BoxGeometry(.25,.13,.40),boot,thigh,[side*.10,-.88,.80]);
   legs.push(thigh);
 }
 // Slim arms, sleeves and hands positioned around the fishing rod.

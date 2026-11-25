@@ -128,7 +128,7 @@ mesh(new THREE.CylinderGeometry(.22,.28,.5,8),mat(0x283c4b,.35,.6),lantern,[0,0,
 // visible face oriented toward the ocean (screen-right) and partly toward camera.
 const woman=new THREE.Group();scene.add(woman);
 // Move her fully onto the visible right half of the pier, clear of the scanner overlay.
-woman.position.set(-3.15,.42,2.05);woman.rotation.y=1.08;woman.scale.setScalar(1.22);
+woman.position.set(-3.55,.42,2.05);woman.rotation.y=1.08;woman.scale.setScalar(1.22);
 const skin=mat(0xffd2bd), skinShade=mat(0xe9a995), hair=mat(0x24151b,.15), hairHi=mat(0x633342), hairLight=mat(0x96505a),
       blouse=mat(0xfff2e8), blouseTrim=mat(0xe8b7aa), skirt=mat(0x3c9cb5), skirtShade=mat(0x216b88),
       boot=mat(0x6b4637), hatmat=mat(0xe8c88f), hatBand=mat(0x9b5144), flower=mat(0xfff8ed);
@@ -178,20 +178,26 @@ for(let i=0;i<6;i++){const a=i*Math.PI/3;mesh(new THREE.SphereGeometry(.075,12,1
 // Seated hips and skirt; thighs extend forward over the pier, knees bent down.
 mesh(new THREE.SphereGeometry(.39,20,14),skirt,woman,[0,.78,-.02],[1.12,.62,.95]);
 mesh(new THREE.CylinderGeometry(.40,.47,.22,24),skirt,woman,[0,.67,-.02],[1,.55,1]);
+// Kursi kayu: dia duduk di kursi (dudukan + sandaran + 4 kaki sampai dermaga).
+const chairWood=mat(0x8a5a2e),chairDark=mat(0x6b4423);
+mesh(new THREE.BoxGeometry(.95,.09,.85),chairWood,woman,[0,.70,-.02]);
+const chairBack=mesh(new THREE.BoxGeometry(.9,.78,.08),chairWood,woman,[0,1.08,-.44]);chairBack.rotation.x=-.10;
+for(const sx of [-1,1])for(const sz of [-1,1])
+  mesh(new THREE.BoxGeometry(.09,.82,.09),chairDark,woman,[sx*.34,.25,sz*.28]);
 const legs=[];
 for(const side of [-1,1]){
   const thigh=new THREE.Group();woman.add(thigh);thigh.position.set(side*.20,.78,.12);
   mesh(new THREE.CapsuleGeometry(.145,.62,5,10),skin,thigh,[side*.10,-.04,.47],[1,1,.92]);
   // Bent lower leg and small brown shoe rest on the dock.
-  mesh(new THREE.CapsuleGeometry(.115,.43,5,9),skin,thigh,[side*.13,-.34,.83],[1,1,.9]);
-  mesh(new THREE.BoxGeometry(.25,.13,.40),boot,thigh,[side*.13,-.57,1.03]);
+  mesh(new THREE.CapsuleGeometry(.115,.50,5,9),skin,thigh,[side*.13,-.58,.83],[1,1,.9]);
+  mesh(new THREE.BoxGeometry(.25,.13,.40),boot,thigh,[side*.13,-.88,1.03]);
   legs.push(thigh);
 }
 // Slim arms, sleeves and hands positioned around the fishing rod.
 const armL=new THREE.Group();woman.add(armL);armL.position.set(-.29,1.68,.02);
 mesh(new THREE.CapsuleGeometry(.105,.34,5,10),blouse,armL,[0,-.10,0],[1,1,.9]);
 mesh(new THREE.CapsuleGeometry(.075,.42,5,10),skin,armL,[.02,-.39,.12]);
-mesh(new THREE.SphereGeometry(.09,12,10),skin,armL,[.02,-.62,.16]);armL.rotation.z=-.48;
+mesh(new THREE.SphereGeometry(.09,12,10),skin,armL,[.02,-.62,.16]);armL.rotation.z=-.48;armL.rotation.x=.55;
 const armR=new THREE.Group();woman.add(armR);armR.position.set(.28,1.68,.02);
 mesh(new THREE.CapsuleGeometry(.105,.34,5,10),blouse,armR,[0,-.10,0],[1,1,.9]);
 mesh(new THREE.CapsuleGeometry(.075,.42,5,10),skin,armR,[-.02,-.39,.12]);
@@ -430,7 +436,7 @@ async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-st
 
 // Animated 3D ocean, character pose, rod, fish schools, buoy.
 function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();const a=waterGeo.attributes.position;for(let i=0;i<a.count;i++){const x=waterBase[i*3],z=waterBase[i*3+2];a.array[i*3+1]=waterBase[i*3+1]+Math.sin(x*.36+t*1.15)*.10+Math.cos(z*.48+t*.85)*.075+Math.sin((x+z)*.22+t*.6)*.06;}a.needsUpdate=true;waterGeo.computeVertexNormals();
- woman.position.y=.42+Math.sin(t*1.4)*.025;torso.rotation.z=Math.sin(t*.7)*.012;head.rotation.z=Math.sin(t*.55)*.018;armL.rotation.z=-.48+Math.sin(t*1.1)*.025;armR.rotation.z=.32+Math.sin(t*.9)*.025;let biting=!!(latest&&latest.positions&&latest.positions.length);bite+=((biting?1:0)-bite)*.04;rodPivot.rotation.z=-.76-bite*.30+Math.sin(t*.85)*.035+Math.sin(t*7)*.05*bite;seg1.rotation.z=-.03-bite*.14+Math.sin(t*.8)*.015;seg2.rotation.z=-.03-bite*.20+Math.sin(t*.8)*.015;seg3.rotation.z=-.04-bite*.26+Math.sin(t*6)*.03*bite;for(const l of legs)l.rotation.x=Math.sin(t*.65)*.018;
+ woman.position.y=.42+Math.sin(t*1.4)*.025;torso.rotation.z=Math.sin(t*.7)*.012;head.rotation.z=Math.sin(t*.55)*.018;armL.rotation.z=-.30+Math.sin(t*1.1)*.025;armR.rotation.z=.32+Math.sin(t*.9)*.025;let biting=!!(latest&&latest.positions&&latest.positions.length);bite+=((biting?1:0)-bite)*.04;rodPivot.rotation.z=-.76-bite*.30+Math.sin(t*.85)*.035+Math.sin(t*7)*.05*bite;seg1.rotation.z=-.03-bite*.14+Math.sin(t*.8)*.015;seg2.rotation.z=-.03-bite*.20+Math.sin(t*.8)*.015;seg3.rotation.z=-.04-bite*.26+Math.sin(t*6)*.03*bite;for(const l of legs)l.rotation.x=Math.sin(t*.65)*.018;
  // Keep the bobber physically attached to the fishing line and rod tip.
  const bobberWorld=rodPivot.localToWorld(lineEndLocal.clone());bobberWorld.y=.06+Math.sin(t*2.4)*.075;buoy.position.copy(bobberWorld);buoy.rotation.z=Math.sin(t*2)*.09;
  const rodTipWorld=new THREE.Vector3();rodTipMark.getWorldPosition(rodTipWorld);fishingLine.geometry.setFromPoints([rodTipWorld,bobberWorld]);fishingLine.geometry.computeBoundingSphere();

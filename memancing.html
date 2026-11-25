@@ -245,6 +245,12 @@ let caught=0, escaped=0, busy=false, sessionSol=0;
 const $=id=>document.getElementById(id);
 const fmtSol=v=>v==null?'—':(v>0?'+':'')+v.toFixed(4).replace('.',',')+' SOL';
 const dotColor=f=>f.result==='profit'?'#7ee787':f.result==='lose'?'#ff8a8a':'#8ecbff';
+// Label ikan: nama token + (bila di-hold) PnL SOL + % di baris kedua.
+function fishTagHTML(f){
+  const held=f.result==='open'&&f.sol!=null&&Math.abs(f.sol)>0.00005;
+  const pnl=held?`<br><span style="color:${f.sol>=0?'#4dffad':'#ff7777'}">${f.sol>=0?'+':''}${f.sol.toFixed(4)} SOL${f.pct!=null?` (${f.pct>=0?'+':''}${f.pct.toFixed(1)}%)`:''}</span>`:'';
+  return `<i style="background:${dotColor(f)}"></i>${f.sym}${pnl}`;
+}
 
 // ======== PAPAN HASIL ========
 function renderBoard(){
@@ -289,7 +295,7 @@ function spawnFish(f,i){
   el.style.animationDuration=dur+'s';
   // fase tersebar rata: ikan sudah tersebar di laut saat halaman dibuka
   el.style.animationDelay=(-(idx*dur/Math.max(FISH.length,1))).toFixed(1)+'s';
-  el.innerHTML=`<span class="tag"><i style="background:${dotColor(f)}"></i>${f.sym}</span>
+  el.innerHTML=`<span class="tag">${fishTagHTML(f)}</span>
     <span class="fbody" style="filter:hue-rotate(${f.hue}deg)">${f.emoji}</span>`;
   el.addEventListener('click',()=>castFish(f,el));
   fishLayer.appendChild(el);
@@ -576,6 +582,7 @@ function syncFish(){
     if(f.done) return;
     const el=fishLayer.querySelector(`.fish[data-sym="${f.sym}"]`);
     if(!el){ spawnFish(f); return; }
+    const tag=el.querySelector('.tag');if(tag)tag.innerHTML=fishTagHTML(f);
     if(f.result==='open' && !f.held){ holdFish(f,el); }
     else if(f.result==='profit'||f.result==='lose'){
       if(f.held){ f.held=false; busy=true; outcome(f,el); }

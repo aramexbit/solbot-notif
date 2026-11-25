@@ -198,7 +198,15 @@ mesh(new THREE.CapsuleGeometry(.075,.42,5,10),skin,armR,[-.02,-.39,.12]);
 mesh(new THREE.SphereGeometry(.095,14,12),skin,armR,[.175,-.605,.16]);armR.rotation.z=.32;
 // Rod grip is placed exactly at the right hand; the rod casts out over the water.
 const rodPivot=new THREE.Group();woman.add(rodPivot);rodPivot.position.set(.455,1.075,.18);rodPivot.rotation.z=-.76;
-const rod=mesh(new THREE.CylinderGeometry(.035,.075,5.5,10),mat(0x4a2f25,.3),rodPivot,[0,2.75,0]);rod.rotation.z=-.10;
+// Joran 3 segmen: melengkung nyata saat ada ikan (bite), bukan sekadar miring.
+const rodMat=mat(0x4a2f25,.3);
+const seg1=new THREE.Group();rodPivot.add(seg1);
+mesh(new THREE.CylinderGeometry(.06,.075,1.9,10),rodMat,seg1,[0,.95,0]);
+const seg2=new THREE.Group();seg1.add(seg2);seg2.position.set(0,1.9,0);
+mesh(new THREE.CylinderGeometry(.045,.06,1.9,10),rodMat,seg2,[0,.95,0]);
+const seg3=new THREE.Group();seg2.add(seg3);seg3.position.set(0,1.9,0);
+mesh(new THREE.CylinderGeometry(.028,.045,1.8,10),rodMat,seg3,[0,.9,0]);
+const rodTipMark=new THREE.Object3D();seg3.add(rodTipMark);rodTipMark.position.set(0,1.8,0);
 // Fishing line runs from the rod tip to a world-space bobber that follows its endpoint.
 const lineMat=new THREE.LineBasicMaterial({color:0xe8f8ff});
 const fishingLine=new THREE.Line(new THREE.BufferGeometry(),lineMat);scene.add(fishingLine);
@@ -422,10 +430,10 @@ async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-st
 
 // Animated 3D ocean, character pose, rod, fish schools, buoy.
 function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();const a=waterGeo.attributes.position;for(let i=0;i<a.count;i++){const x=waterBase[i*3],z=waterBase[i*3+2];a.array[i*3+1]=waterBase[i*3+1]+Math.sin(x*.36+t*1.15)*.10+Math.cos(z*.48+t*.85)*.075+Math.sin((x+z)*.22+t*.6)*.06;}a.needsUpdate=true;waterGeo.computeVertexNormals();
- woman.position.y=.42+Math.sin(t*1.4)*.025;torso.rotation.z=Math.sin(t*.7)*.012;head.rotation.z=Math.sin(t*.55)*.018;armL.rotation.z=-.48+Math.sin(t*1.1)*.025;armR.rotation.z=.32+Math.sin(t*.9)*.025;let biting=!!(latest&&latest.positions&&latest.positions.length);bite+=((biting?1:0)-bite)*.04;rodPivot.rotation.z=-.76-bite*.38+Math.sin(t*.85)*.035+Math.sin(t*7)*.05*bite;rod.rotation.z=-.10-bite*.22+Math.sin(t*.8)*.018+Math.sin(t*6)*.03*bite;for(const l of legs)l.rotation.x=Math.sin(t*.65)*.018;
+ woman.position.y=.42+Math.sin(t*1.4)*.025;torso.rotation.z=Math.sin(t*.7)*.012;head.rotation.z=Math.sin(t*.55)*.018;armL.rotation.z=-.48+Math.sin(t*1.1)*.025;armR.rotation.z=.32+Math.sin(t*.9)*.025;let biting=!!(latest&&latest.positions&&latest.positions.length);bite+=((biting?1:0)-bite)*.04;rodPivot.rotation.z=-.76-bite*.30+Math.sin(t*.85)*.035+Math.sin(t*7)*.05*bite;seg1.rotation.z=-.03-bite*.14+Math.sin(t*.8)*.015;seg2.rotation.z=-.03-bite*.20+Math.sin(t*.8)*.015;seg3.rotation.z=-.04-bite*.26+Math.sin(t*6)*.03*bite;for(const l of legs)l.rotation.x=Math.sin(t*.65)*.018;
  // Keep the bobber physically attached to the fishing line and rod tip.
  const bobberWorld=rodPivot.localToWorld(lineEndLocal.clone());bobberWorld.y=.06+Math.sin(t*2.4)*.075;buoy.position.copy(bobberWorld);buoy.rotation.z=Math.sin(t*2)*.09;
- const rodTipWorld=rodPivot.localToWorld(new THREE.Vector3(0,5.48,0));fishingLine.geometry.setFromPoints([rodTipWorld,bobberWorld]);fishingLine.geometry.computeBoundingSphere();
+ const rodTipWorld=new THREE.Vector3();rodTipMark.getWorldPosition(rodTipWorld);fishingLine.geometry.setFromPoints([rodTipWorld,bobberWorld]);fishingLine.geometry.computeBoundingSphere();
  ring.position.set(bobberWorld.x,.015,bobberWorld.z);ring.scale.setScalar(.8+((t%2)/2)*.8);ring.material.opacity=.5-((t%2)/2)*.4;
  for(const f of fishGroup.children){const d=f.userData;if(d.baseX===undefined)continue;if(d.sellAnim){const a=d.sellAnim,el=t-a.t0;if(a.kind==='profit'){const k=Math.min(1,el/1.8);f.position.x=a.x0+Math.sin(k*Math.PI)*.6;f.position.y=a.y0+k*4.5;f.position.z=a.z0;f.rotation.z=-k*.9;f.scale.setScalar(Math.max(.01,(a.s0||1.05)*(1-k*.7)));}else{const drop=Math.min(1,el/.7);f.position.y=a.y0-drop*1.6+Math.sin(el*3)*.1;f.position.x=a.x0-Math.max(0,el-.7)*3.2;f.position.z=a.z0;f.rotation.y=-.5;}if(d.tailPivot&&d.tailPivot.rotation){d.tailPivot.rotation.y=Math.sin(t*10+d.phase)*.7;}continue;}const speed=d.speed||.5;f.position.x=d.baseX+Math.sin(t*speed+d.phase)*.8;f.position.y=d.baseY+Math.sin(t*1.5+d.phase)*.16;f.position.z=d.baseZ+Math.cos(t*.6+d.phase)*.25;f.rotation.y=Math.sin(t*.6+d.phase)*.18;if(d.tailPivot && d.tailPivot.rotation){d.tailPivot.rotation.y=Math.sin(t*7+d.phase)*.55;}if(d.isPosition){f.position.x+=Math.sin(t*2)*.25;}}
  lamp.intensity=7.5+Math.sin(t*2.2)*1.2;renderer.render(scene,camera);}

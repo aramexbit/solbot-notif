@@ -12,10 +12,9 @@
 #boot-status b{display:block;font-size:17px;margin-bottom:7px}#boot-status small{display:block;color:#b8dcf5;line-height:1.5}#boot-status.error{border-color:#ff9c83}#boot-status[hidden]{display:none}
 </style>
   <script>
-// Data live dibaca dari memancing-data.json (sumber yang sama dengan situs
-// Mancing 2D) — dipoll tiap 30 detik, jadi halaman ini jalan tanpa bridge.
-// WebSocket opsional: isi wsUrl dengan URL WSS bridge Python bila ada;
-// bila kosong, halaman tetap live dari file data.
+// Data live HANYA dari /api/status + /api/events (bot di PC).
+// Tidak ada file data di situs — halaman kosong sampai bot di-start.
+// WebSocket opsional: isi wsUrl dengan URL WSS bridge Python bila ada.
 window.SOLBOT_CONFIG = {
   wsUrl: "",
   reconnectMs: 2500,
@@ -58,7 +57,7 @@ window.SOLBOT_CONFIG = {
       <div class="metric"><span>DEMO BALANCE</span><b id="balance">— SOL</b><small id="balanceUsd">Awaiting bot data</small></div>
       <div class="metric"><span>OPEN POSITIONS</span><b id="openCount">0</b><small>Active catches</small></div>
       <div class="metric"><span>WIN / LOSS</span><b class="positive" id="pnl">+0.00 SOL</b><small id="tradeCount">0 trades</small></div>
-      <div class="live-pill" id="livePill"><i></i><b>CONNECTING</b><small>memancing-data.json</small></div>
+      <div class="live-pill" id="livePill"><i></i><b>CONNECTING</b><small>Menunggu bot</small></div>
       <button class="icon-btn" id="soundBtn" title="Toggle sound">♫</button><button class="icon-btn" id="fsBtn" title="Fullscreen (sembunyikan panel)">⛶</button>
     </header>
 
@@ -316,10 +315,7 @@ let socket;let previousPositionKeys=new Set();
 function connect(){const url=window.SOLBOT_CONFIG?.wsUrl||'';if(!url||url.includes('GANTI-DENGAN')){setConnection(false);return;}try{socket=new WebSocket(url);socket.onopen=()=>{setConnection(true);toast('Python bot terhubung');};socket.onmessage=e=>{try{const s=JSON.parse(e.data);if(s&&s.updated_at){renderStatus(s);setConnection(true);}}catch(err){console.warn('Bad bridge payload',err);}};socket.onclose=()=>{setConnection(false);setTimeout(connect,window.SOLBOT_CONFIG?.reconnectMs||2500);};socket.onerror=()=>setConnection(false);}catch(e){setConnection(false);setTimeout(connect,3000);}}
 $('soundBtn').addEventListener('click',()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'♫ ON':'♫';toast(soundOn?'Sound UI enabled':'Sound UI muted');});
 $('fsBtn').addEventListener('click',()=>{const app=$('app');app.classList.toggle('ui-hidden');toast(app.classList.contains('ui-hidden')?'Mode fullscreen — ketuk ⛶ untuk menampilkan panel lagi':'Panel ditampilkan');});
-// Peta memancing-data.json (sumber yang sama dengan situs Mancing 2D) ke
-// bentuk yang dipakai renderStatus. Ikan = token hasil scanner (watchlist).
-function mapMancing(d){const fish=Array.isArray(d.fish)?d.fish:[];const watch=fish.filter(f=>f.result!=='open').map(f=>({symbol:f.sym,mint:f.sym,src:f.src||'Scanner',source:f.note||('Skor '+f.score),score:f.score,price:f.price}));const positions=fish.filter(f=>f.result==='open').map(f=>({symbol:f.sym,mint:f.sym,entry:f.price,last_px:f.price}));return{start:Number(d.start_sol||1),eq:Number(d.equity??d.start_sol??1),free:Number(d.equity??d.start_sol??1),demo:/demo/i.test(d.source||'')||d.mode==='easy',mode:d.mode||'demo-easy',positions,trades:[],scanning:watch,watch,updated_at:Date.now(),updated_label:d.updated||'',scan_tokens:d.scan?.tokens??watch.length,scan_passed:d.scan?.passed??watch.length,trades_total:d.trades_total??0,last_event:d.last_event||'',source:d.source||''};}
-// Bangun objek status live dari satu mode API (dipakai /api/status + live-status.json).
+// Bangun objek status live dari satu mode API (/api/status).
 function liveFromMode(m,base){
   return{start:Number(m.start||1),eq:Number(m.eq||0),free:Number(m.eq||0),
     closed_pnl:Number(m.closed_pnl??((m.eq||0)-(m.start||1))),
@@ -332,16 +328,15 @@ function liveFromMode(m,base){
     updated_label:new Date(Number(m.ts||Date.now())).toLocaleTimeString(),
     last_event:'',source:'live'};
 }
+// Data HANYA dari /api/status (bot live). Tanpa bot, halaman kosong.
 async function fetchLive(){
-  let base=null,baseLabel='';
-  try{const r=await fetch('./memancing-data.json?'+Date.now(),{cache:'no-store'});if(r.ok){const d=await r.json();base=mapMancing(d);baseLabel=d.updated||'';}}catch(e){}
   try{
-    const r2=await fetch('/api/status',{cache:'no-store'});
-    if(r2.ok){
-      const d2=await r2.json();
-      const m=(d2.modes&&(d2.modes['demo-easy']||d2.modes[Object.keys(d2.modes)[0]]))||null;
+    const r=await fetch('/api/status',{cache:'no-store'});
+    if(r.ok){
+      const d=await r.json();
+      const m=(d.modes&&(d.modes['demo-easy']||d.modes[Object.keys(d.modes)[0]]))||null;
       if(m){
-        const live=liveFromMode(m,base);
+        const live=liveFromMode(m,null);
         renderStatus(live);setConnection(true);
         const pill=$('livePill');pill.querySelector('b').textContent='LIVE';
         pill.querySelector('small').textContent='Data '+live.updated_label;
@@ -349,23 +344,8 @@ async function fetchLive(){
       }
     }
   }catch(e){}
-  // Fallback GitHub Pages: data live yang disinkron GitHub Action tiap 5 menit.
-  try{
-    const r3=await fetch('./live-status.json?'+Date.now(),{cache:'no-store'});
-    if(r3.ok){
-      const d3=await r3.json();
-      const m3=(d3.modes&&(d3.modes['demo-easy']||d3.modes[Object.keys(d3.modes)[0]]))||null;
-      if(m3){
-        const live=liveFromMode(m3,base);
-        renderStatus(live);setConnection(true);
-        const pill=$('livePill');pill.querySelector('b').textContent='LIVE';
-        pill.querySelector('small').textContent='Data '+live.updated_label;
-        return;
-      }
-    }
-  }catch(e){}
-  if(base){renderStatus(base);setConnection(true);const pill=$('livePill');pill.querySelector('b').textContent='LIVE';pill.querySelector('small').textContent='Data '+baseLabel;}
-  else setConnection(false);
+  setConnection(false);
+  const pill=$('livePill');pill.querySelector('small').textContent='Menunggu bot di-start';
 }
 // Notifikasi asli bot (buy/sell/TP1/profit/lose/SL/sinyal-scan) dari /api/events.
 function eventKind(e){
@@ -437,7 +417,8 @@ function renderEvents(list){
   }
   renderWinLose();if(latest)updateTokenFish(latest);
 }
-async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-store'});if(r.ok){const d=await r.json();renderEvents(d.events||[]);return;}}catch(e){}try{const r=await fetch('./live-events.json?'+Date.now(),{cache:'no-store'});if(r.ok){const d=await r.json();renderEvents(d.events||[]);}}catch(e){}}
+// Event HANYA dari /api/events (bot live). Tanpa bot, panel kosong.
+async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-store'});if(r.ok){const d=await r.json();renderEvents(d.events||[]);return;}}catch(e){}renderEvents([]);}
 
 // Animated 3D ocean, character pose, rod, fish schools, buoy.
 function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();const a=waterGeo.attributes.position;for(let i=0;i<a.count;i++){const x=waterBase[i*3],z=waterBase[i*3+2];a.array[i*3+1]=waterBase[i*3+1]+Math.sin(x*.36+t*1.15)*.10+Math.cos(z*.48+t*.85)*.075+Math.sin((x+z)*.22+t*.6)*.06;}a.needsUpdate=true;waterGeo.computeVertexNormals();

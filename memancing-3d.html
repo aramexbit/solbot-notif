@@ -209,29 +209,96 @@ const rodGrip=mesh(new THREE.SphereGeometry(.105,14,12),skin,rodPivot,[0,0,.015]
 
 // Fish factory with moving tail and token name sprite.
 const fishGroup=new THREE.Group();scene.add(fishGroup);const fishObjects=new Map();
-function labelSprite(text){const c=document.createElement('canvas');c.width=256;c.height=80;const ctx=c.getContext('2d');ctx.fillStyle='rgba(2,24,53,.82)';ctx.strokeStyle='#9de9ff';ctx.lineWidth=5;roundRect(ctx,8,8,240,64,20);ctx.fill();ctx.stroke();ctx.font='bold 34px Nunito, sans-serif';ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.fillText(String(text).slice(0,18),128,51);const tex=new THREE.CanvasTexture(c);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.scale.set(1.5,.47,1);return sp;}
+function labelSprite(text,sub='',subColor='#ffffff'){const c=document.createElement('canvas');c.width=256;c.height=sub?110:80;const ctx=c.getContext('2d');ctx.fillStyle='rgba(2,24,53,.82)';ctx.strokeStyle='#9de9ff';ctx.lineWidth=5;roundRect(ctx,8,8,240,sub?94:64,20);ctx.fill();ctx.stroke();ctx.textAlign='center';if(sub){ctx.font='bold 30px Nunito, sans-serif';ctx.fillStyle='#ffffff';ctx.fillText(String(text).slice(0,18),128,42);ctx.font='bold 24px Nunito, sans-serif';ctx.fillStyle=subColor;ctx.fillText(String(sub).slice(0,24),128,82);}else{ctx.font='bold 34px Nunito, sans-serif';ctx.fillStyle='#ffffff';ctx.fillText(String(text).slice(0,18),128,51);}const tex=new THREE.CanvasTexture(c);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.scale.set(1.5,sub?.64:.47,1);return sp;}
 function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 function makeFish(symbol,color=0xffa83d,scale=1,withLabel=true){const g=new THREE.Group();const body=mesh(new THREE.SphereGeometry(.55,18,14),mat(color,.28,.12),g,[0,0,0],[1.35,.72,.62]);const belly=mesh(new THREE.SphereGeometry(.42,14,10),mat(0xffe5c1),g,[.03,-.22,.02],[1.15,.42,.55]);const tailPivot=new THREE.Group();g.add(tailPivot);tailPivot.position.set(-.68,0,0);const tail=mesh(new THREE.ConeGeometry(.34,.65,3),mat(color),tailPivot,[-.28,0,0]);tail.rotation.z=Math.PI/2;for(const side of [-1,1])mesh(new THREE.ConeGeometry(.18,.42,3),mat(color),g,[.05,side*.37,.02],[1,1,.45]).rotation.z=side*.6;mesh(sphere,mat(0xffffff),g,[.48,.16,.48],[.12,.13,.08]);mesh(sphere,mat(0x152b3c),g,[.51,.16,.545],[.055,.075,.035]);if(withLabel){const label=labelSprite(symbol);label.position.set(0,.93,0);g.add(label);}g.userData={tailPivot,symbol};g.scale.setScalar(scale);return g;}
 const fishPalette=[0xffa23a,0x8d62ef,0x43c7db,0xf16d8a,0xf1ca4c,0x4b8be8];
 for(let i=0;i<5;i++){const f=makeFish('AMBIENT',fishPalette[i%fishPalette.length],.45+Math.random()*.2,false);fishGroup.add(f);f.userData.baseX=-8+Math.random()*16;f.userData.baseY=-2.4-Math.random()*1.2;f.userData.baseZ=-5+Math.random()*4;f.userData.phase=Math.random()*6.28;f.userData.speed=.3+Math.random()*.3;}
-function updateTokenFish(status){const tokens=[...(status?.scanning||[]).slice(0,10),...(status?.watch||[]),...(status?.positions||[])];const wanted=new Map();for(const t of tokens){const key=t.mint||t.symbol;if(!key)continue;wanted.set(key,t);}
- for(const [key,t] of wanted){if(!fishObjects.has(key)){const f=makeFish(t.symbol||'TOKEN',t.pnl>0?0xffc64c:0x66c8f0,1.05);fishGroup.add(f);f.userData.baseX=-1+Math.random()*7;f.userData.baseY=-1.3-Math.random()*1.8;f.userData.baseZ=-1+Math.random()*-3;f.userData.phase=Math.random()*6.28;f.userData.speed=.65;f.userData.tokenKey=key;f.userData.isPosition=(status.positions||[]).some(p=>p.mint===key);fishObjects.set(key,f);}const f=fishObjects.get(key);f.userData.isPosition=(status.positions||[]).some(p=>p.mint===key);f.userData.stage=f.userData.isPosition?'BUY':(status.watch||[]).some(w=>w.mint===key)?'WATCH':'SCAN';f.userData.symbol=t.symbol||'TOKEN';f.children.find(x=>x.isSprite)?.material.map?.dispose?.();f.children.find(x=>x.isSprite)?.removeFromParent();const sp=labelSprite('$'+(t.symbol||'TOKEN'));sp.position.set(0,.95,0);f.add(sp);}
- for(const [key,f] of fishObjects){if(!wanted.has(key)){f.userData.leaving=true;setTimeout(()=>{if(f.userData.leaving){fishGroup.remove(f);fishObjects.delete(key);}},1600);}}
+function tokenFromTitle(t){const m=String(t||'').match(/\$([A-Za-z0-9]+)/);return m?m[1]:null;}
+function pnlSolFromBody(b){const s=String(b||'');const m=s.match(/Profit dikunci:\s*([+-][\d.]+)\s*SOL/)||s.match(/Profit:\s*([+-][\d.]+)\s*SOL/)||s.match(/Rugi:\s*([+-][\d.]+)\s*SOL/);return m?Number(m[1]):null;}
+// Ikan = token yang sedang bot kerjakan: posisi live (di-hold, label PnL SOL + %),
+// token yang baru terjual (label PnL akhir), sinyal scan + watchlist (nama saja).
+function updateTokenFish(status){
+  const evs=Array.isArray(latestEvents)?latestEvents:[];
+  const wanted=new Map();
+  for(const p of (status?.positions||[])){
+    const key=p.mint||p.symbol;if(!key)continue;
+    const pnlSol=(p.cost!=null&&p.value!=null)?(Number(p.value)-Number(p.cost)):null;
+    const pct=(p.pnl_pct!=null)?Number(p.pnl_pct):((Number(p.last_px||p.entry||0)/Number(p.entry||1))-1)*100;
+    wanted.set(key,{symbol:p.symbol||'TOKEN',held:true,pnlSol,pct});
+  }
+  const closedBySym={};
+  for(const e of evs){
+    if(e.kind!=='jual')continue;
+    const sym=tokenFromTitle(e.title);if(!sym)continue;
+    const t=String(e.title||'').toUpperCase();
+    if(t.includes('TRAILING')||t.includes('STOP LOSS')||t.includes('TAKE PROFIT')||t.includes('PANIC')||t.includes('KELUAR')||t.includes('BATAS WAKTU')){
+      const ps=pnlSolFromBody(e.body);
+      if(ps!=null&&closedBySym[sym]==null)closedBySym[sym]={pnlSol:ps,pct:(e.pnl==null?null:Number(e.pnl))};
+    }
+  }
+  for(const sym in closedBySym){
+    if(wanted.has(sym))continue;
+    wanted.set(sym,{symbol:sym,sold:true,pnlSol:closedBySym[sym].pnlSol,pct:closedBySym[sym].pct});
+  }
+  for(const e of evs){
+    if(e.kind!=='sinyal')continue;
+    const sym=tokenFromTitle(e.title);if(!sym)continue;
+    if(!wanted.has(sym))wanted.set(sym,{symbol:sym,watch:true});
+  }
+  for(const w of (status?.watch||[])){
+    const key=w.mint||w.symbol;if(!key)continue;
+    if(wanted.has(key))continue;
+    if(closedBySym[w.symbol])continue;
+    wanted.set(key,{symbol:w.symbol||'TOKEN',watch:true});
+  }
+  const list=[...wanted.entries()].slice(0,10);
+  const wantedKeys=new Set(list.map(([k])=>k));
+  for(const [key,t] of list){
+    if(!fishObjects.has(key)){
+      const col=(t.held||t.sold)?(t.pnlSol!=null&&t.pnlSol>=0?0xffc64c:0x66c8f0):0x43c7db;
+      const f=makeFish(t.symbol||'TOKEN',col,1.05);
+      fishGroup.add(f);
+      f.userData.baseX=-1+Math.random()*7;f.userData.baseY=-1.3-Math.random()*1.8;f.userData.baseZ=-1+Math.random()*-3;f.userData.phase=Math.random()*6.28;f.userData.speed=.65;f.userData.tokenKey=key;
+      fishObjects.set(key,f);
+    }
+    const f=fishObjects.get(key);
+    f.userData.isPosition=!!t.held;
+    f.userData.stage=t.held?'BUY':t.sold?'SOLD':'WATCH';
+    f.userData.symbol=t.symbol||'TOKEN';
+    let sub='',subColor='#ffffff';
+    if((t.held||t.sold)&&t.pnlSol!=null){
+      const pctTxt=(t.pct==null?'':` (${t.pct>=0?'+':''}${Number(t.pct).toFixed(1)}%)`);
+      sub=`${t.pnlSol>=0?'+':''}${t.pnlSol.toFixed(4)} SOL${pctTxt}`;
+      subColor=t.pnlSol>=0?'#4dffad':'#ff7777';
+    }
+    f.children.find(x=>x.isSprite)?.material.map?.dispose?.();
+    f.children.find(x=>x.isSprite)?.removeFromParent();
+    const sp=labelSprite('$'+(t.symbol||'TOKEN'),sub,subColor);
+    sp.position.set(0,sub?1.0:.95,0);
+    f.add(sp);
+  }
+  for(const [key,f] of fishObjects){
+    if(!wantedKeys.has(key)){
+      f.userData.leaving=true;
+      setTimeout(()=>{if(f.userData.leaving){fishGroup.remove(f);fishObjects.delete(key);}},1600);
+    }
+  }
 }
 
 // Floating buoy and ring ripple.
 const buoy= new THREE.Group();scene.add(buoy);mesh(new THREE.SphereGeometry(.25,16,12),mat(0xff4c42),buoy,[0,0,0],[.8,.8,.8]);mesh(new THREE.CylinderGeometry(.08,.08,.32,12),mat(0xffffff),buoy,[0,-.2,0]);const ring=mesh(new THREE.TorusGeometry(.34,.025,8,40),new THREE.MeshBasicMaterial({color:0xa6f1ff,transparent:true,opacity:.6}),scene,[0,.1,-2]);
 
 // Simple procedural clouds and distant birds are already in 3D. Main animation loop.
-const clock=new THREE.Clock();let latest=null,prevTradeCount=0,lastSignature='',soundOn=false;let lastMsg='';
+const clock=new THREE.Clock();let latest=null,latestEvents=[],prevTradeCount=0,lastSignature='',soundOn=false;let lastMsg='';
 function format(n,d=3){if(n===null||n===undefined||Number.isNaN(Number(n)))return '—';return Number(n).toFixed(d);}
 function setText(id,v){const el=$(id);if(el)el.textContent=v;}
 function addEvent(kind,title,body=''){const host=$('events');const row=document.createElement('div');row.className='event '+kind;const ico=kind==='buy'?'🎣':kind==='sell'?'🐟':kind==='sl'?'⚠️':'✨';row.innerHTML=`<span class="ico">${ico}</span><div><strong></strong><small></small></div>`;row.querySelector('strong').textContent=title;row.querySelector('small').textContent=body;host.prepend(row);while(host.children.length>7)host.lastChild.remove();}
 function renderStatus(s){if(!s)return;latest=s;const start=Number(s.start||0),eq=Number(s.eq||0),pnl=Number(s.closed_pnl??(eq-start));setText('balance',`${format(eq,4)} SOL`);setText('balanceUsd',`Free ${format(s.free||0,4)} SOL · ${s.demo?'DEMO':'LIVE MODE'}`);setText('openCount',(s.positions||[]).length);setText('pnl',`${pnl>=0?'+':''}${format(pnl,4)} SOL`);setText('tradeCount',`${s.trades_total??(s.trades||[]).length} trades`);setText('mode',s.mode||'—');setText('scanCount',s.scan_tokens??(s.scanning||[]).length);setText('watchCount',(s.watch||[]).length);setText('updated',s.updated_label||new Date(s.updated_at||Date.now()).toLocaleTimeString());
  const scanning=$('scanning');scanning.replaceChildren();(s.scanning||[]).slice(0,7).forEach(t=>{const e=document.createElement('div');e.className='token';e.innerHTML='<div><b></b><small></small></div><span class="tag">SCAN</span>';e.querySelector('b').textContent='$'+(t.symbol||'TOKEN');e.querySelector('small').textContent=t.source||'Candidate';scanning.append(e);});if(!scanning.children.length)scanning.innerHTML='<div class="empty">Tidak ada kandidat saat ini</div>';
  const watch=$('watch');watch.replaceChildren();(s.watch||[]).slice(0,6).forEach(t=>{const e=document.createElement('div');e.className='token';e.innerHTML='<div><b></b><small></small></div><span class="tag">WATCH</span>';e.querySelector('b').textContent='$'+(t.symbol||'TOKEN');e.querySelector('small').textContent=t.src||t.source||'Watchlist';watch.append(e);});if(!watch.children.length)watch.innerHTML='<div class="empty">Belum ada watchlist</div>';
- const pos=$('positions');pos.replaceChildren();(s.positions||[]).forEach(p=>{const e=document.createElement('div');e.className='position';const pct=((Number(p.last_px||p.entry||0)/Number(p.entry||1))-1)*100;e.innerHTML='<b></b><span class="pnl"></span><small></small>';e.querySelector('b').textContent='$'+p.symbol;e.querySelector('.pnl').textContent=`${pct>=0?'+':''}${pct.toFixed(1)}%`;e.querySelector('small').textContent=`Entry ${p.entry||'—'} · Now ${p.last_px||p.entry||'—'}`;pos.append(e);});if(!pos.children.length)pos.innerHTML='<div class="empty">Belum ada posisi aktif</div>';
- const hist=$('history');hist.replaceChildren();(s.trades||[]).slice(-8).reverse().forEach(t=>{const tr=document.createElement('tr');const date=t.closed||t.opened||t.ts||Date.now();const time=typeof date==='number'?new Date(date*1000).toLocaleTimeString():String(date).slice(-8);const action=(t.action||t.side||t.result||'SELL').toUpperCase();tr.innerHTML='<td></td><td></td><td></td><td></td>';tr.children[0].textContent=time;tr.children[1].textContent='$'+(t.symbol||'TOKEN');tr.children[2].textContent=action;tr.children[2].className=action.includes('BUY')?'buy-text':'sell-text';tr.children[3].textContent=`${format(t.pnl_sol||0,4)} SOL`;hist.append(tr);});if(!hist.children.length)hist.innerHTML='<tr><td colspan="4" class="empty">Belum ada transaksi</td></tr>';
+ const pos=$('positions');pos.replaceChildren();(s.positions||[]).forEach(p=>{const e=document.createElement('div');e.className='position';const pct=(p.pnl_pct!=null)?Number(p.pnl_pct):((Number(p.last_px||p.entry||0)/Number(p.entry||1))-1)*100;const pnlSol=(p.cost!=null&&p.value!=null)?(Number(p.value)-Number(p.cost)):null;e.innerHTML='<b></b><span class="pnl"></span><small></small>';e.querySelector('b').textContent='$'+p.symbol;e.querySelector('.pnl').textContent=`${pct>=0?'+':''}${pct.toFixed(1)}%`;e.querySelector('small').textContent=`Entry ${p.entry||'—'} · Now ${p.last_px||p.entry||'—'}${pnlSol==null?'':` · ${pnlSol>=0?'+':''}${pnlSol.toFixed(4)} SOL`}`;pos.append(e);});if(!pos.children.length)pos.innerHTML='<div class="empty">Belum ada posisi aktif</div>';
+ renderTradeHistory();
  updateTokenFish(s);
 
 
@@ -257,7 +324,7 @@ async function fetchLive(){
         const live={start:Number(m.start||1),eq:Number(m.eq||0),free:Number(m.eq||0),
           closed_pnl:Number(m.closed_pnl??((m.eq||0)-(m.start||1))),
           demo:true,mode:m.mode||'demo-easy',
-          positions:(Array.isArray(m.pos)?m.pos:[]).map(p=>({symbol:p.symbol,mint:p.symbol,entry:p.entry,last_px:p.px})),
+          positions:(Array.isArray(m.pos)?m.pos:[]).map(p=>({symbol:p.symbol,mint:p.symbol,entry:p.entry,last_px:p.px,cost:p.cost,value:p.value,pnl_pct:p.pnl,opened:p.opened})),
           trades:[],trades_total:Number(m.trades||0),
           scanning:base?base.scanning:[],watch:base?base.watch:[],
           scan_tokens:base?base.scan_tokens:0,
@@ -288,7 +355,64 @@ function eventKind(e){
   }
   return {cls:'info',ico:'✨'};
 }
+// Trade History dari notifikasi asli bot (/api/events) + posisi terbuka live.
+// Status bot tidak membawa daftar trade, jadi riwayat dibangun dari event beli/jual.
+function renderTradeHistory(){
+  const hist=$('history');if(!hist)return;
+  const rows=[];
+  for(const p of (latest?.positions||[])){
+    const pnlSol=(p.cost!=null&&p.value!=null)?(Number(p.value)-Number(p.cost)):null;
+    const pct=(p.pnl_pct!=null)?Number(p.pnl_pct):((Number(p.last_px||p.entry||0)/Number(p.entry||1))-1)*100;
+    rows.push({ts:(p.opened?Number(p.opened)*1000:Date.now()),sym:p.symbol,action:'OPEN',pnl:pnlSol,pct,open:true});
+  }
+  for(const e of (Array.isArray(latestEvents)?latestEvents:[])){
+    const sym=tokenFromTitle(e.title);if(!sym)continue;
+    const t=String(e.title||'').toUpperCase();
+    let action=null,pnlSol=null;
+    const pct=(e.pnl==null?null:Number(e.pnl));
+    if(e.kind==='beli'){
+      action='BUY';
+      const m=String(e.body||'').match(/Modal:\s*([\d.]+)\s*SOL/);
+      pnlSol=m?Number(m[1]):null;
+    }else if(e.kind==='jual'){
+      if(t.includes('TP1'))action='TP1';
+      else if(t.includes('TRAILING'))action='TRAILING';
+      else if(t.includes('STOP LOSS'))action='SL';
+      else if(t.includes('TAKE PROFIT'))action='TP';
+      else if(t.includes('PANIC'))action='PANIC';
+      else if(t.includes('KELUAR'))action='EXIT';
+      else if(t.includes('BATAS WAKTU'))action='TIME';
+      else action='SELL';
+      pnlSol=pnlSolFromBody(e.body);
+    }
+    if(!action)continue;
+    rows.push({ts:Number(e.ts||Date.now()),sym,action,pnl:pnlSol,pct,open:false});
+  }
+  rows.sort((a,b)=>((b.open?1:0)-(a.open?1:0))||(b.ts-a.ts));
+  hist.replaceChildren();
+  for(const r of rows.slice(0,10)){
+    const tr=document.createElement('tr');
+    const time=new Date(r.ts).toLocaleTimeString();
+    let val='';
+    if(r.open){
+      val=(r.pnl==null?'—':`${r.pnl>=0?'+':''}${r.pnl.toFixed(4)} SOL`)+(r.pct==null?'':` (${r.pct>=0?'+':''}${r.pct.toFixed(1)}%)`);
+    }else if(r.action==='BUY'){
+      val=(r.pnl==null?'—':`${r.pnl.toFixed(4)} SOL`);
+    }else{
+      val=(r.pnl==null?'—':`${r.pnl>=0?'+':''}${r.pnl.toFixed(4)} SOL`)+(r.pct==null?'':` (${r.pct>=0?'+':''}${r.pct.toFixed(1)}%)`);
+    }
+    tr.innerHTML='<td></td><td></td><td></td><td></td>';
+    tr.children[0].textContent=time;
+    tr.children[1].textContent='$'+r.sym;
+    tr.children[2].textContent=r.action;
+    tr.children[2].className=(r.action==='BUY'||r.action==='OPEN')?'buy-text':'sell-text';
+    tr.children[3].textContent=val;
+    hist.append(tr);
+  }
+  if(!hist.children.length)hist.innerHTML='<tr><td colspan="4" class="empty">Belum ada transaksi</td></tr>';
+}
 function renderEvents(list){
+  latestEvents=Array.isArray(list)?list:[];
   const host=$('events');if(!host) return;
   host.replaceChildren();
   const evs=(Array.isArray(list)?list:[]).slice(0,7);
@@ -305,6 +429,7 @@ function renderEvents(list){
     row.querySelector('small').textContent=body;
     host.append(row);
   }
+  renderTradeHistory();if(latest)updateTokenFish(latest);
 }
 async function fetchEvents(){try{const r=await fetch('/api/events',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();renderEvents(d.events||[]);}catch(e){}}
 
